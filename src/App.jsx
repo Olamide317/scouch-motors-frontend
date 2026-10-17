@@ -1,4 +1,7 @@
 import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import Vehicles from "./components/Vehicles";
+import WhatsAppButton from "./components/WhatsAppButton";
 
 function App() {
   return (
@@ -6,10 +9,13 @@ function App() {
       <Navbar />
 
       <main>
-        {/* Hero section will go here */}
+        <Hero />
+        <Vehicles />
       </main>
+
+      <WhatsAppButton />
     </div>
   );
 }
 
-export default App
+export default App;
