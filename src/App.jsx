@@ -3,6 +3,7 @@ import Hero from "./components/Hero";
 import Vehicles from "./components/Vehicles";
 import WhatsAppButton from "./components/WhatsAppButton";
 import OurServices from "./components/OurServices";
+import AboutUs from "./components/AboutUs";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Hero />
         <Vehicles />
         <OurServices />
+        <AboutUs />
       </main>
 
       <WhatsAppButton />
