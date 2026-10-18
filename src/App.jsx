@@ -2,6 +2,7 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Vehicles from "./components/Vehicles";
 import WhatsAppButton from "./components/WhatsAppButton";
+import OurServices from "./components/OurServices";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <main>
         <Hero />
         <Vehicles />
+        <OurServices />
       </main>
 
       <WhatsAppButton />
