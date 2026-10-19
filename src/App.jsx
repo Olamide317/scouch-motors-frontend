@@ -4,6 +4,8 @@ import Vehicles from "./components/Vehicles";
 import WhatsAppButton from "./components/WhatsAppButton";
 import OurServices from "./components/OurServices";
 import AboutUs from "./components/AboutUs";
+import ContactBanner from "./components/ContactBanner";
+import VisitUs from "./components/VisitUs";
 
 function App() {
   return (
@@ -15,6 +17,8 @@ function App() {
         <Vehicles />
         <OurServices />
         <AboutUs />
+        <ContactBanner />
+        <VisitUs />
       </main>
 
       <WhatsAppButton />
