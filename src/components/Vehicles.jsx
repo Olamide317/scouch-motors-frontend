@@ -83,12 +83,10 @@ function Vehicles() {
         return true;
       }
 
-      const matchesCategory =
-        category === activeCategory;
+      const matchesCategory = category === activeCategory;
 
       const matchesBrand =
-        !activeBrand ||
-        brand.toLowerCase() === activeBrand.toLowerCase();
+        !activeBrand || brand.toLowerCase() === activeBrand.toLowerCase();
 
       return matchesCategory && matchesBrand;
     });
@@ -112,9 +110,8 @@ function Vehicles() {
       mockVehicles.some(
         (vehicle) =>
           getCategory(vehicle) === category &&
-          getBrand(vehicle).toLowerCase() ===
-          manufacturer.name.toLowerCase()
-      )
+          getBrand(vehicle).toLowerCase() === manufacturer.name.toLowerCase(),
+      ),
     );
 
     setActiveBrand(firstMatchingBrand?.name ?? null);
@@ -149,48 +146,89 @@ function Vehicles() {
       className="w-full bg-white px-5 pt-16 pb-20 sm:px-8 lg:px-[4.05%] lg:pt-24"
     >
       <div className="mx-auto flex w-full max-w-[1728px] flex-col items-center">
-
         {/* SECTION HEADING */}
-        <h2 className="text-center text-[28px] font-bold text-[#3D3D3D] sm:text-[32px] lg:text-[35px]">
+        <h2 className="text-center text-[28px] font-bold text-[#3D3D3D] sm:text-[32px] lg:text-[30px]">
           Vehicle Models
         </h2>
 
         {/* SUBTITLE */}
-        <p className="mt-3 text-center text-base font-medium text-[#3D3D3D]/90 sm:text-xl lg:text-[24px]">
+        <p className="mt-3 text-center text-base font-medium text-[#3D3D3D]/90 sm:text-xl lg:text-[20px]">
           Our available rentable cars
         </p>
 
         {/* SEARCH BAR */}
-        <div className="mt-7 flex h-[60px] w-full max-w-[819px] items-center gap-5 rounded-full bg-white px-5 shadow-[0_1px_14px_rgba(169,169,169,0.25)] sm:h-[70px]">
-
+        <div
+          className="
+    mt-7
+    flex
+    h-[48px]
+    w-full
+    max-w-[650px]
+    items-center
+    gap-3
+    rounded-full
+    bg-white
+    px-5
+    shadow-[0_1px_14px_rgba(169,169,169,0.25)]
+    sm:h-[55px]
+  "
+        >
+          {/* SEARCH ICON */}
           <img
             src={searchIcon}
             alt=""
             aria-hidden="true"
-            className="h-7 w-7 shrink-0 object-contain brightness-0 opacity-60 sm:h-10 sm:w-10"
+            className="
+      h-[22px]
+      w-[22px]
+      shrink-0
+      object-contain
+      brightness-0
+      opacity-60
+      sm:h-[25px]
+      sm:w-[25px]
+    "
           />
 
+          {/* SEARCH INPUT */}
           <input
             type="search"
             placeholder="Search for a car"
             aria-label="Search available vehicles"
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full min-w-0 bg-transparent text-base text-[#3D3D3D] outline-none placeholder:text-[#3D3D3D]/60 sm:text-xl lg:text-[25px]"
+            className="
+      w-full
+      min-w-0
+      bg-transparent
+      text-[14px]
+      text-[#3D3D3D]
+      outline-none
+      placeholder:text-[14px]
+      placeholder:text-[#3D3D3D]/60
+      sm:text-[16px]
+      sm:placeholder:text-[16px]
+    "
           />
 
+          {/* CLEAR SEARCH BUTTON */}
           {search && (
             <button
               type="button"
               aria-label="Clear search"
               onClick={() => setSearch("")}
-              className="shrink-0 px-2 text-xl text-[#3D3D3D]/60 hover:text-[#233D4D]"
+              className="
+        shrink-0
+        px-2
+        text-xl
+        text-[#3D3D3D]/60
+        hover:text-[#233D4D]
+      "
             >
               &times;
             </button>
           )}
         </div>
-
 
         {/* VEHICLE CATEGORY TABS */}
         <div
@@ -210,12 +248,10 @@ function Vehicles() {
           aria-label="Vehicle categories"
         >
           {categories.map((category) => {
-            const isActive =
-              !isGlobalView && activeCategory === category;
+            const isActive = !isGlobalView && activeCategory === category;
 
             const isWide =
-              category === "Super Cars" ||
-              category === "Luxury Cars";
+              category === "Super Cars" || category === "Luxury Cars";
 
             return (
               <button
@@ -235,14 +271,12 @@ function Vehicles() {
           transition-colors
           sm:text-base
           2xl:text-[20px]
-          ${isWide
-                    ? "w-[130px] 2xl:w-[210px]"
-                    : "w-[105px] 2xl:w-[151px]"
-                  }
-          ${isActive
-                    ? "bg-[rgba(248,121,39,0.17)] font-bold text-[#F87927]"
-                    : "bg-[#F5F5F5] font-medium text-[#626262] hover:bg-gray-200"
-                  }
+          ${isWide ? "w-[130px] 2xl:w-[210px]" : "w-[105px] 2xl:w-[151px]"}
+          ${
+            isActive
+              ? "bg-[rgba(248,121,39,0.17)] font-bold text-[#F87927]"
+              : "bg-[#F5F5F5] font-medium text-[#626262] hover:bg-gray-200"
+          }
         `}
               >
                 {category}
@@ -257,12 +291,9 @@ function Vehicles() {
           role="group"
           aria-label="Vehicle manufacturers"
         >
-          <div
-            className="grid min-w-[720px] grid-cols-6 items-center"
-          >
+          <div className="grid min-w-[720px] grid-cols-6 items-center">
             {manufacturers.map((brand, index) => {
-              const isActive =
-                !isGlobalView && activeBrand === brand.name;
+              const isActive = !isGlobalView && activeBrand === brand.name;
 
               return (
                 <div
@@ -283,20 +314,16 @@ function Vehicles() {
                     aria-pressed={isActive}
                     onClick={() => handleBrand(brand.name)}
                     className={`relative z-10 flex h-[70px] w-[calc(100%-12px)] flex-col items-center justify-center gap-[3px] rounded-[15px] transition-colors
-              ${isActive
-                        ? "bg-white/20"
-                        : "hover:bg-white/10"
-                      }`}
+              ${isActive ? "bg-white/20" : "hover:bg-white/10"}`}
                   >
                     <img
                       src={brand.logo}
                       alt=""
                       aria-hidden="true"
-                      className=" h-[30px] w-auto max-w-[72px] object-contain" />
+                      className=" h-[30px] w-auto max-w-[72px] object-contain"
+                    />
 
-                    <span
-                      className=" text-sm font-medium leading-tight  text-white 2xl:text-[20px]"
-                    >
+                    <span className=" text-sm font-medium leading-tight  text-white 2xl:text-[20px]">
                       {brand.name}
                     </span>
                   </button>
@@ -306,15 +333,11 @@ function Vehicles() {
           </div>
         </div>
 
-
         {/* VEHICLE RESULTS */}
         {filteredVehicles.length > 0 ? (
           <div className="mt-10 grid w-full grid-cols-1 justify-items-center gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3 2xl:gap-x-[60px]">
             {filteredVehicles.map((vehicle) => (
-              <VehicleCard
-                key={vehicle.id}
-                vehicle={vehicle}
-              />
+              <VehicleCard key={vehicle.id} vehicle={vehicle} />
             ))}
           </div>
         ) : (
@@ -324,8 +347,7 @@ function Vehicles() {
             </h3>
 
             <p className="max-w-md text-sm text-[#3D3D3D]/70">
-              No demonstration vehicles match your current
-              selection.
+              No demonstration vehicles match your current selection.
             </p>
 
             <button
@@ -345,9 +367,7 @@ function Vehicles() {
             onClick={handleViewAll}
             className="flex h-[58px] items-center gap-[18px] text-[#3D3D3D] transition-colors hover:text-[#F87927]"
           >
-            <span className="text-lg font-medium 2xl:text-2xl">
-              View all
-            </span>
+            <span className="text-lg font-medium 2xl:text-2xl">View all</span>
 
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -370,8 +390,8 @@ function Vehicles() {
 
         {/* MOCK INVENTORY NOTICE */}
         <p className="mt-4 text-center text-xs text-[#3D3D3D]/60">
-          Demonstration vehicles and prices.
-          Actual inventory and rates are subject to confirmation.
+          Demonstration vehicles and prices. Actual inventory and rates are
+          subject to confirmation.
         </p>
       </div>
     </section>

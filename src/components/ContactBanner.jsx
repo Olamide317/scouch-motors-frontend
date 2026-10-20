@@ -14,7 +14,7 @@ function ContactBanner() {
   return (
     <section
       id="contact"
-      className="w-full bg-white px-5 pt-12 pb-8 sm:px-8 lg:px-[4.05%] lg:pt-16 lg:pb-8"
+      className="w-full bg-white px-5 pt-12 pb-4 sm:px-8 lg:px-[4.05%] lg:pt-16 lg:pb-8"
     >
       {/* MAIN BANNER CONTAINER */}
       <div
@@ -23,7 +23,7 @@ function ContactBanner() {
           mx-auto
           w-full
           max-w-[1400px]
-          lg:h-[440px]
+          lg:h-[400px]
         "
       >
         {/* BACKGROUND PANEL - DESKTOP */}
@@ -31,9 +31,9 @@ function ContactBanner() {
           aria-hidden="true"
           className="
             absolute
-            top-[5%]
+            top-[10%]
             right-0
-            bottom-[5%]
+            bottom-[10%]
             left-[20%]
             hidden
             rounded-[50px]
@@ -70,7 +70,7 @@ function ContactBanner() {
     lg:absolute
     lg:top-1/2
     lg:left-0
-    lg:w-[53%]
+    lg:w-[49%]
     lg:-translate-y-1/2
     lg:px-0
     lg:pt-0
@@ -82,18 +82,20 @@ function ContactBanner() {
               className="
       pointer-events-none
       absolute
-      bottom-[8%]
+      bottom-[7%]
       left-[12%]
       z-0
       h-[12%]
       w-[76%]
       rounded-full
-      bg-black/30
-      blur-[24px]
+      bg-black/35
+      blur-[22px]
+      lg:bottom-[5%]
+      lg:blur-[28px]
     "
             />
 
-            {/* TOYOTA SUV */}
+            {/* VEHICLE */}
             <img
               src={contactCar}
               alt="Toyota SUV"
@@ -106,8 +108,7 @@ function ContactBanner() {
       h-auto
       w-full
       object-contain
-      drop-shadow-[0_12px_12px_rgba(0,0,0,0.18)]
-      lg:scale-[1.08]
+      lg:scale-[1]
     "
             />
           </div>
@@ -139,8 +140,8 @@ function ContactBanner() {
                 leading-tight
                 font-semibold
                 text-[#233D4D]
-                sm:text-[32px]
-                lg:text-[36px]
+                sm:text-[30px]
+                lg:text-[32px]
               "
             >
               Contact Us
@@ -156,7 +157,7 @@ function ContactBanner() {
                 font-semibold
                 text-[#233D4D]/50
                 sm:text-xl
-                lg:text-[clamp(18px,1.7vw,24px)]
+                lg:text-[clamp(16px,1.4vw,20px)]
               "
             >
               Lorem ipsum dolor sit amet consectetur. Congue dictum ipsum sit
@@ -209,7 +210,7 @@ function ContactBanner() {
                   whitespace-nowrap
                   text-[#233D4D]/80
                   sm:text-lg
-                  lg:text-[clamp(18px,1.74vw,30px)]
+                  lg:text-[clamp(16px,1.4vw,22px)]
                 "
               >
                 @ Scouch Motors Ltd

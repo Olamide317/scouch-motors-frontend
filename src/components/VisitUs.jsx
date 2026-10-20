@@ -28,7 +28,7 @@ function VisitUs() {
   return (
     <section
       aria-labelledby="visit-us-title"
-      className="w-full bg-white py-16 lg:py-[80px]"
+      className="w-full bg-white py-8 lg:pb-[20px] lg:pt-[10px]"
     >
       <div
         className="
@@ -41,7 +41,7 @@ function VisitUs() {
           gap-12
           px-5
           sm:px-8
-          lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]
+          lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]
 lg:gap-[clamp(24px,3vw,50px)]
           lg:px-[4.7%]
         "
@@ -150,7 +150,7 @@ lg:gap-[clamp(24px,3vw,50px)]
         </div>
 
         {/* RIGHT: LOCATION MAP */}
-        <div className="relative aspect-[793/598] w-full min-w-0">
+        <div className="relative aspect-[793/598] w-full min-w-0 lg:w-[108%]">
           <img
             src={locationPreview}
             alt="Map showing the Port Harcourt area"

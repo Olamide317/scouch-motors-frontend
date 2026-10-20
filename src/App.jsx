@@ -6,6 +6,8 @@ import OurServices from "./components/OurServices";
 import AboutUs from "./components/AboutUs";
 import ContactBanner from "./components/ContactBanner";
 import VisitUs from "./components/VisitUs";
+import ContactForm from "./components/ContactForm";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -19,7 +21,10 @@ function App() {
         <AboutUs />
         <ContactBanner />
         <VisitUs />
+        <ContactForm />
       </main>
+
+      <Footer />
 
       <WhatsAppButton />
     </div>
