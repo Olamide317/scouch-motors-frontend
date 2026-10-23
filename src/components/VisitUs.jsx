@@ -1,3 +1,7 @@
+import businessSettings, {
+  getPhoneUrl,
+} from "../config/businessSettings";
+
 import locationPreview from "../assets/contact/location-preview.png";
 
 import locationIcon from "../assets/contact/icons/location.svg";
@@ -5,26 +9,19 @@ import emailIcon from "../assets/contact/icons/email.svg";
 import phoneIcon from "../assets/contact/icons/phone.svg";
 import clockIcon from "../assets/contact/icons/clock.svg";
 
-const contactDetails = [
-  {
-    id: "address",
-    icon: locationIcon,
-    content: "15 Ezimgbu Link Road (Mommy B Road) GRA Phase 4 Portharcourt",
-  },
-  {
-    id: "email",
-    icon: emailIcon,
-    content: "info@scouchlimited.com",
-    href: "mailto:info@scouchlimited.com",
-  },
-  {
-    id: "phone",
-    icon: phoneIcon,
-    content: "+234 803 547 0559, +234 (0) 803 261 1750",
-  },
-];
-
 function VisitUs() {
+  const { contact, location, openingHours } = businessSettings;
+
+  const detailTextClass = `
+    min-w-0
+    text-base
+    leading-[1.4]
+    font-medium
+    text-[#3D3D3D]/80
+    sm:text-lg
+    lg:text-[clamp(17px,1.39vw,24px)]
+  `;
+
   return (
     <section
       aria-labelledby="visit-us-title"
@@ -42,7 +39,7 @@ function VisitUs() {
           px-5
           sm:px-8
           lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]
-lg:gap-[clamp(24px,3vw,50px)]
+          lg:gap-[clamp(24px,3vw,50px)]
           lg:px-[4.7%]
         "
       >
@@ -75,49 +72,61 @@ lg:gap-[clamp(24px,3vw,50px)]
               lg:gap-[clamp(24px,2.4vw,40px)]
             "
           >
-            {contactDetails.map((detail) => (
-              <div key={detail.id} className="flex min-w-0 items-start gap-4">
-                <img
-                  src={detail.icon}
-                  alt=""
-                  aria-hidden="true"
-                  className="mt-1 h-[25px] w-[25px] shrink-0 object-contain"
-                />
+            {/* ADDRESS */}
+            <div className="flex min-w-0 items-start gap-4">
+              <img
+                src={locationIcon}
+                alt=""
+                aria-hidden="true"
+                className="mt-1 h-[25px] w-[25px] shrink-0 object-contain"
+              />
 
-                {detail.href ? (
-                  <a
-                    href={detail.href}
-                    className="
-                      min-w-0
-                      text-base
-                      leading-[1.4]
-                      font-medium
-                      text-[#3D3D3D]/80
-                      transition-colors
-                      hover:text-[#F87927]
-                      sm:text-lg
-                      lg:text-[clamp(17px,1.39vw,24px)]
-                    "
-                  >
-                    {detail.content}
-                  </a>
-                ) : (
-                  <p
-                    className="
-                      min-w-0
-                      text-base
-                      leading-[1.4]
-                      font-medium
-                      text-[#3D3D3D]/80
-                      sm:text-lg
-                      lg:text-[clamp(17px,1.39vw,24px)]
-                    "
-                  >
-                    {detail.content}
-                  </p>
-                )}
+              <p className={detailTextClass}>
+                {location.address}
+              </p>
+            </div>
+
+            {/* EMAIL */}
+            <div className="flex min-w-0 items-start gap-4">
+              <img
+                src={emailIcon}
+                alt=""
+                aria-hidden="true"
+                className="mt-1 h-[25px] w-[25px] shrink-0 object-contain"
+              />
+
+              <a
+                href={`mailto:${contact.email}`}
+                className={`${detailTextClass} transition-colors hover:text-[#F87927]`}
+              >
+                {contact.email}
+              </a>
+            </div>
+
+            {/* PHONE NUMBERS */}
+            <div className="flex min-w-0 items-start gap-4">
+              <img
+                src={phoneIcon}
+                alt=""
+                aria-hidden="true"
+                className="mt-1 h-[25px] w-[25px] shrink-0 object-contain"
+              />
+
+              <div className={detailTextClass}>
+                {contact.phoneNumbers.map((phone, index) => (
+                  <span key={phone}>
+                    {index > 0 && ", "}
+
+                    <a
+                      href={getPhoneUrl(phone)}
+                      className="transition-colors hover:text-[#F87927]"
+                    >
+                      {phone}
+                    </a>
+                  </span>
+                ))}
               </div>
-            ))}
+            </div>
 
             {/* OPENING HOURS */}
             <div className="flex min-w-0 items-start gap-4">
@@ -128,22 +137,16 @@ lg:gap-[clamp(24px,3vw,50px)]
                 className="mt-1 h-[25px] w-[25px] shrink-0 object-contain"
               />
 
-              <div
-                className="
-                  min-w-0
-                  text-base
-                  leading-[1.4]
-                  font-medium
-                  text-[#3D3D3D]/80
-                  sm:text-lg
-                  lg:text-[clamp(17px,1.39vw,24px)]
-                "
-              >
-                <h3 className="font-bold text-[#3D3D3D]">Opening hours:</h3>
+              <div className={detailTextClass}>
+                <h3 className="font-bold text-[#3D3D3D]">
+                  Opening hours:
+                </h3>
 
-                <p>Monday – Friday: 10:00am – 4:00pm GMT</p>
-
-                <p>Saturday: 9:00am – 5:00pm GMT</p>
+                {openingHours.map((schedule) => (
+                  <p key={schedule.label}>
+                    {schedule.label}: {schedule.hours}
+                  </p>
+                ))}
               </div>
             </div>
           </div>
@@ -157,35 +160,35 @@ lg:gap-[clamp(24px,3vw,50px)]
             loading="lazy"
             decoding="async"
             className="
-      block
-      h-full
-      w-full
-      rounded-[25px]
-      object-cover
-    "
+              block
+              h-full
+              w-full
+              rounded-[25px]
+              object-cover
+            "
           />
 
           {/* LOCATION CONTROL */}
           <div
             aria-hidden="true"
             className="
-      pointer-events-none
-      absolute
-      top-[4.5%]
-      right-[5%]
-      z-10
-      flex
-      h-[42px]
-      w-[42px]
-      items-center
-      justify-center
-      rounded-full
-      bg-[#233D4D]/45
-      sm:h-[50px]
-      sm:w-[50px]
-      lg:h-[55px]
-      lg:w-[55px]
-    "
+              pointer-events-none
+              absolute
+              top-[4.5%]
+              right-[5%]
+              z-10
+              flex
+              h-[42px]
+              w-[42px]
+              items-center
+              justify-center
+              rounded-full
+              bg-[#233D4D]/45
+              sm:h-[50px]
+              sm:w-[50px]
+              lg:h-[55px]
+              lg:w-[55px]
+            "
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +205,13 @@ lg:gap-[clamp(24px,3vw,50px)]
               <path d="M3 16v2a3 3 0 0 0 3 3h2" />
               <path d="M21 16v2a3 3 0 0 1-3 3h-2" />
               <circle cx="12" cy="12" r="3.5" />
-              <circle cx="12" cy="12" r="1" fill="white" stroke="none" />
+              <circle
+                cx="12"
+                cy="12"
+                r="1"
+                fill="white"
+                stroke="none"
+              />
             </svg>
           </div>
         </div>

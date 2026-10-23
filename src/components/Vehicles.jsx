@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import searchIcon from "../assets/icons/search.svg";
 import VehicleCard from "./VehicleCard";
 import mockVehicles from "../data/mockVehicles";
-
 import lexusLogo from "../assets/vehicles/brands/lexus.png";
 import mercedesLogo from "../assets/vehicles/brands/mercedes.png";
 import toyotaLogo from "../assets/vehicles/brands/toyota.png";
@@ -51,6 +51,11 @@ function Vehicles() {
   const [activeCategory, setActiveCategory] = useState("Sedan");
   const [activeBrand, setActiveBrand] = useState("Lexus");
   const [showAll, setShowAll] = useState(false);
+  const navigate = useNavigate();
+
+  function handleBook(vehicle) {
+    navigate(`/vehicles/${vehicle.id}/book`);
+  }
 
   // FILTER VEHICLES
   const filteredVehicles = useMemo(() => {
@@ -337,7 +342,11 @@ function Vehicles() {
         {filteredVehicles.length > 0 ? (
           <div className="mt-10 grid w-full grid-cols-1 justify-items-center gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3 2xl:gap-x-[60px]">
             {filteredVehicles.map((vehicle) => (
-              <VehicleCard key={vehicle.id} vehicle={vehicle} />
+              <VehicleCard
+                key={vehicle.id}
+                vehicle={vehicle}
+                onBook={handleBook}
+              />
             ))}
           </div>
         ) : (

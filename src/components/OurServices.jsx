@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import carRental from "../assets/services/car-rental.png";
 import carRepair from "../assets/services/car-repair.png";
 
@@ -9,6 +11,7 @@ const services = [
     highlight: "24/7",
     alt: "Vehicles available through Scouch Motors rental services",
     imagePosition: "center",
+    href: "/#vehicles",
   },
   {
     id: "repair",
@@ -16,6 +19,7 @@ const services = [
     title: "Repair/Maintenance",
     alt: "Car repair and maintenance services",
     imagePosition: "center",
+    href: "/services/repair",
   },
 ];
 
@@ -75,10 +79,10 @@ function OurServices() {
             lg:text-[clamp(22px,1.74vw,30px)]
           "
         >
-          Lorem ipsum dolor sit amet consectetur.
-          Faucibus sapien fringilla id sed et diam.
-          Purus mattis at egestas quam in pellentesque eu.
-          Quisque urna risus blandit lorem odio quam.
+          Explore our vehicle rental and automotive care
+          services. Browse available rental vehicles or
+          learn more about our repair and maintenance
+          solutions.
         </p>
 
         {/* SERVICE CARDS */}
@@ -94,16 +98,34 @@ function OurServices() {
           "
         >
           {services.map((service) => (
-            <article
+            <Link
               key={service.id}
+              to={service.href}
+              aria-label={
+                service.id === "rental"
+                  ? "Explore rental vehicles"
+                  : "Explore repair and maintenance services"
+              }
               className="
                 group
                 relative
+                block
                 aspect-[720/367]
                 w-full
                 overflow-hidden
                 rounded-[25px]
                 bg-white
+                transition-[transform,box-shadow]
+                duration-300
+                ease-out
+                hover:-translate-y-1
+                hover:shadow-[0_14px_30px_rgba(35,61,77,0.18)]
+                focus-visible:outline
+                focus-visible:outline-[3px]
+                focus-visible:outline-offset-4
+                focus-visible:outline-[#F87927]
+                motion-reduce:transform-none
+                motion-reduce:transition-none
               "
             >
               {/* ORIGINAL FIGMA IMAGE */}
@@ -118,6 +140,11 @@ function OurServices() {
                   h-full
                   w-full
                   object-cover
+                  transition-transform
+                  duration-500
+                  ease-out
+                  group-hover:scale-[1.04]
+                  motion-reduce:transition-none
                 "
                 style={{
                   objectPosition: service.imagePosition,
@@ -157,7 +184,9 @@ function OurServices() {
 
                 {service.highlight && (
                   <>
-                    <span className="text-white"> / </span>
+                    <span className="text-white">
+                      {" / "}
+                    </span>
 
                     <span
                       className="
@@ -170,7 +199,34 @@ function OurServices() {
                   </>
                 )}
               </h3>
-            </article>
+
+              {/* VISUAL LINK INDICATOR */}
+              <span
+                aria-hidden="true"
+                className="
+                  absolute
+                  right-[5%]
+                  bottom-[8%]
+                  z-10
+                  flex
+                  h-9
+                  w-9
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-white/20
+                  text-xl
+                  text-white
+                  backdrop-blur-sm
+                  transition-transform
+                  duration-300
+                  group-hover:translate-x-1
+                  motion-reduce:transition-none
+                "
+              >
+                →
+              </span>
+            </Link>
           ))}
         </div>
       </div>

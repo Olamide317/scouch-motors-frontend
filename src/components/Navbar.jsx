@@ -1,5 +1,6 @@
-
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import businessSettings, { getPhoneUrl } from "../config/businessSettings";
 
 import phoneIcon from "../assets/icons/phone.svg";
 import emailIcon from "../assets/icons/email.svg";
@@ -7,56 +8,48 @@ import searchIcon from "../assets/icons/search.svg";
 import profileIcon from "../assets/icons/profile.svg";
 
 const navLinks = [
-  { name: "Home", href: "#home" },
-  { name: "Vehicles", href: "#vehicles" },
-  { name: "Our services", href: "#services" },
-  { name: "About Us", href: "#about" },
-  { name: "Contact", href: "#contact" },
+  { name: "Home", href: "/" },
+  { name: "Vehicles", href: "/#vehicles" },
+  { name: "Our services", href: "/#services" },
+  { name: "About Us", href: "/#about" },
+  { name: "Contact", href: "/#contact" },
 ];
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [accountOpen, setAccountOpen] = useState(false);
+  const { contact } = businessSettings;
 
   const closeMenu = () => setMenuOpen(false);
 
   return (
     <header className="w-full font-sans">
       {/* DESKTOP CONTACT STRIP */}
-      <div className="hidden min-h-[65px] items-center bg-white px-5 lg:flex lg:px-[5.2%]">
+      <div className="hidden h-[65px] items-center bg-white px-5 lg:flex lg:px-[5.2%]">
         <div className="flex w-full items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-5 lg:gap-12">
-            <a
-              href="tel:+2348035470559"
+            <a href={getPhoneUrl(contact.phone)}
               className="flex items-center gap-[6px] text-sm text-body-text 2xl:text-xl"
             >
-              <img
-                src={phoneIcon}
-                alt=""
-                className="h-[23px] w-[22px]"
-              />
-              <span>+234 8035470559</span>
+              <img src={phoneIcon} alt="" className="h-[23px] w-[22px]" />
+              <span>{contact.phone}</span>
             </a>
 
-            <a
-              href="mailto:info@scouchlimited.com"
+            <a href={`mailto:${contact.email}`}
               className="flex items-center gap-[6px] text-sm text-body-text 2xl:text-xl"
             >
-              <img
-                src={emailIcon}
-                alt=""
-                className="h-[22px] w-[26px]"
-              />
-              <span>Info@scouchlimited.com</span>
+              <img src={emailIcon} alt="" className="h-[22px] w-[26px]" />
+              <span>{contact.email}</span>
             </a>
           </div>
 
-          <a
-            href="#contact"
+          <Link
+            to="/#contact"
             className="flex min-h-[40px] shrink-0 items-center justify-center rounded-[5px] bg-secondary px-4 text-center text-sm font-extrabold text-white transition-opacity hover:opacity-90 2xl:w-[260px] 2xl:text-xl"
           >
             Book An Appointment
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -64,14 +57,14 @@ function Navbar() {
       <nav className="bg-primary px-5 lg:px-[4.05%]">
         <div className="flex h-[76px] w-full items-center justify-between gap-4 lg:h-[100px] 2xl:gap-6">
           {/* BRAND */}
-          <a
-            href="#home"
+          <Link
+            to="/"
             onClick={closeMenu}
             className="shrink-0 whitespace-nowrap text-xl font-extrabold text-white sm:text-2xl lg:text-xl 2xl:text-2xl"
           >
             <span className="text-secondary">Scouch</span>
             {" Motors Ltd"}
-          </a>
+          </Link>
 
           {/* DESKTOP SEARCH */}
           <div className="hidden h-[60px] min-w-0 max-w-[320px] flex-1 items-center gap-4 rounded-[25px] bg-white/25 px-4 xl:flex 2xl:max-w-[420px]">
@@ -94,9 +87,9 @@ function Navbar() {
           {/* DESKTOP NAVIGATION */}
           <div className="hidden shrink-0 items-center gap-4 xl:flex 2xl:gap-5">
             {navLinks.map((link, index) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 className={`whitespace-nowrap text-base transition-colors 2xl:text-xl ${
                   index === 0
                     ? "font-bold text-secondary underline underline-offset-4"
@@ -104,17 +97,79 @@ function Navbar() {
                 }`}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </div>
 
-          {/* DESKTOP PROFILE ICON */}
-          <div className="hidden shrink-0 xl:block">
-            <img
-              src={profileIcon}
-              alt="Profile"
-              className="h-12 w-12 2xl:h-[54px] 2xl:w-[54px]"
-            />
+          {/* DESKTOP ACCOUNT MENU — INSIDE MAIN NAVBAR */}
+          <div className="relative hidden shrink-0 xl:block">
+            <button
+              type="button"
+              onClick={() => setAccountOpen((prev) => !prev)}
+              aria-label="Account menu"
+              aria-expanded={accountOpen}
+              aria-controls="desktop-account-menu"
+              className="
+                flex items-center justify-center
+                rounded-full
+                transition-transform
+                hover:scale-105
+                focus-visible:outline-2
+                focus-visible:outline-offset-2
+                focus-visible:outline-[#F87927]
+              "
+            >
+              <img
+                src={profileIcon}
+                alt=""
+                className="h-12 w-12 2xl:h-[54px] 2xl:w-[54px]"
+              />
+            </button>
+
+            {accountOpen && (
+              <div
+                id="desktop-account-menu"
+                className="
+                  absolute
+                  right-0
+                  top-full
+                  z-50
+                  mt-3
+                  w-[210px]
+                  overflow-hidden
+                  rounded-xl
+                  border
+                  border-[#EAECF0]
+                  bg-white
+                  p-2
+                  shadow-[0_12px_35px_rgba(35,61,77,0.15)]
+                "
+              >
+                <Link
+                  to="/login"
+                  onClick={() => setAccountOpen(false)}
+                  className="
+                    block rounded-lg px-4 py-3
+                    text-sm font-semibold text-[#233D4D]
+                    transition-colors hover:bg-[#EAECF0]
+                  "
+                >
+                  Login
+                </Link>
+
+                <Link
+                  to="/register"
+                  onClick={() => setAccountOpen(false)}
+                  className="
+                    mt-1 block rounded-lg px-4 py-3
+                    text-sm font-semibold text-[#233D4D]
+                    transition-colors hover:bg-[#EAECF0]
+                  "
+                >
+                  Create Account
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* MOBILE MENU BUTTON */}
@@ -137,9 +192,9 @@ function Navbar() {
             className="flex flex-col gap-1 border-t border-white/20 py-4 xl:hidden"
           >
             {navLinks.map((link, index) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 onClick={closeMenu}
                 className={`rounded-md px-3 py-3 text-base transition-colors hover:bg-white/10 ${
                   index === 0
@@ -148,20 +203,40 @@ function Navbar() {
                 }`}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
+
+            {/* MOBILE ACCOUNT LINKS */}
+            <div className="mt-3 border-t border-white/20 pt-3">
+              <Link
+                to="/login"
+                onClick={closeMenu}
+                className="
+                  block rounded-md px-3 py-3
+                  text-base font-medium text-white
+                  transition-colors hover:bg-white/10
+                "
+              >
+                Login
+              </Link>
+
+              <Link
+                to="/register"
+                onClick={closeMenu}
+                className="
+                  block rounded-md px-3 py-3
+                  text-base font-semibold text-[#F87927]
+                  transition-colors hover:bg-white/10
+                "
+              >
+                Create Account
+              </Link>
+            </div>
 
             {/* MOBILE CONTACT INFORMATION */}
             <div className="mt-3 flex flex-col gap-4 border-t border-white/20 px-3 pt-5 text-sm text-white">
-              <a
-                href="tel:+2348035470559"
-                className="flex items-center gap-3"
-              >
-                <img
-                  src={phoneIcon}
-                  alt=""
-                  className="h-5 w-5 shrink-0"
-                />
+              <a href="tel:+2348035470559" className="flex items-center gap-3">
+                <img src={phoneIcon} alt="" className="h-5 w-5 shrink-0" />
                 <span>+234 8035470559</span>
               </a>
 
@@ -169,14 +244,8 @@ function Navbar() {
                 href="mailto:info@scouchlimited.com"
                 className="flex items-center gap-3"
               >
-                <img
-                  src={emailIcon}
-                  alt=""
-                  className="h-5 w-5 shrink-0"
-                />
-                <span className="break-all">
-                  Info@scouchlimited.com
-                </span>
+                <img src={emailIcon} alt="" className="h-5 w-5 shrink-0" />
+                <span className="break-all">Info@scouchlimited.com</span>
               </a>
             </div>
           </div>
@@ -188,11 +257,7 @@ function Navbar() {
         <div className="mx-auto flex max-w-xl flex-col gap-3 sm:flex-row">
           {/* MOBILE SEARCH */}
           <div className="flex min-h-[48px] min-w-0 flex-1 items-center gap-3 rounded-xl border border-light-gray bg-[#F5F6F7] px-4">
-            <img
-              src={searchIcon}
-              alt=""
-              className="h-5 w-5 shrink-0"
-            />
+            <img src={searchIcon} alt="" className="h-5 w-5 shrink-0" />
 
             <input
               type="search"
@@ -205,12 +270,12 @@ function Navbar() {
           </div>
 
           {/* MOBILE APPOINTMENT BUTTON */}
-          <a
-            href="#contact"
+          <Link
+            to="/#contact"
             className="flex min-h-[48px] shrink-0 items-center justify-center rounded-lg bg-secondary px-5 py-3 text-center text-sm font-bold text-white transition-opacity hover:opacity-90"
           >
             Book An Appointment
-          </a>
+          </Link>
         </div>
       </div>
     </header>

@@ -1,22 +1,16 @@
 import whatsappIcon from "../assets/icons/whatsapp.svg";
-
-const WHATSAPP_NUMBER = "";
+import { getWhatsAppUrl } from "../config/businessSettings";
 
 function WhatsAppButton() {
-  const hasWhatsAppNumber = WHATSAPP_NUMBER.trim() !== "";
-
-  const whatsappLink = hasWhatsAppNumber
-    ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-        "Hello Scouch Motors, I'd like to make an enquiry."
-      )}`
-    : "#contact";
+  const whatsappLink = getWhatsAppUrl();
 
   return (
     <a
       href={whatsappLink}
-      target={hasWhatsAppNumber ? "_blank" : undefined}
-      rel={hasWhatsAppNumber ? "noopener noreferrer" : undefined}
-      aria-label="Contact Scouch Motors"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Chat with Scouch Motors on WhatsApp"
+      title="Chat with us on WhatsApp"
       className="
         fixed
         bottom-6
@@ -34,6 +28,9 @@ function WhatsAppButton() {
         duration-300
         hover:scale-110
         hover:shadow-lg
+        focus-visible:outline-2
+        focus-visible:outline-offset-4
+        focus-visible:outline-[#233D4D]
         md:bottom-8
         md:right-8
       "

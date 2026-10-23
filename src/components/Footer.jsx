@@ -1,21 +1,23 @@
-import brandImage from "../assets/footer/brand-image.png";
+import { Link } from "react-router-dom";
+import businessSettings from "../config/businessSettings";
 
+import brandImage from "../assets/footer/brand-image.png";
 import facebookIcon from "../assets/footer/social-1.svg";
 import instagramIcon from "../assets/footer/social-2.svg";
 import twitterIcon from "../assets/footer/social-3.svg";
 
 // FOOTER NAVIGATION
 const pageLinks = [
-  { label: "Home", href: "#home" },
-  { label: "Vehicles", href: "#vehicles" },
-  { label: "Our Services", href: "#services" },
-  { label: "About Us", href: "#about" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", href: "/" },
+  { label: "Vehicles", href: "/#vehicles" },
+  { label: "Our Services", href: "/#services" },
+  { label: "About Us", href: "/#about" },
+  { label: "Contact", href: "/#contact" },
 ];
 
 const quickLinks = [
-  { label: "Rent/24hrs", href: "#vehicles" },
-  { label: "Repair", href: "#services" },
+  { label: "Rent/24hrs", href: "/#vehicles" },
+  { label: "Repair", href: "/services/repair" },
 ];
 
 // SOCIAL MEDIA ICONS
@@ -23,20 +25,34 @@ const socialIcons = [
   {
     name: "Facebook",
     icon: facebookIcon,
+    settingsKey: "facebook",
   },
   {
     name: "Instagram",
     icon: instagramIcon,
+    settingsKey: "instagram",
   },
   {
     name: "Twitter",
     icon: twitterIcon,
+    settingsKey: "twitter",
   },
 ];
 
 function Footer() {
   // Automatically returns the current year
   const currentYear = new Date().getFullYear();
+  const activeSocials = socialIcons.filter((social) => {
+    const settings = businessSettings.socialMedia?.[social.settingsKey];
+
+    if (!settings?.enabled || !settings.url) return false;
+
+    try {
+      return new URL(settings.url).protocol === "https:";
+    } catch {
+      return false;
+    }
+  });
 
   return (
     <footer
@@ -70,7 +86,6 @@ function Footer() {
       />
 
       <div className="mx-auto w-full max-w-[1728px]">
-
         {/* MAIN FOOTER */}
         <div
           className="
@@ -92,10 +107,8 @@ function Footer() {
             lg:pb-8
           "
         >
-
           {/* COMPANY BRANDING */}
           <div className="flex flex-col items-start">
-
             {/* LOGO */}
             <img
               src={brandImage}
@@ -120,12 +133,8 @@ function Footer() {
                 lg:text-[24px]
               "
             >
-              <span className="text-[#F87927]">
-                Scouch
-              </span>{" "}
-              <span className="text-white">
-                Motors Ltd
-              </span>
+              <span className="text-[#F87927]">Scouch</span>{" "}
+              <span className="text-white">Motors Ltd</span>
             </h2>
 
             {/* SOCIAL MEDIA SECTION */}
@@ -139,7 +148,6 @@ function Footer() {
                 lg:mt-auto
               "
             >
-
               {/* ICONS */}
               <div
                 className="flex items-center gap-3"
@@ -176,24 +184,86 @@ function Footer() {
                 ))}
               </div>
 
-              {/* SOCIAL HANDLE */}
-              <p
-                className="
-                  text-base
-                  font-medium
-                  text-white
-                  lg:text-[18px]
-                "
-              >
-                @ Scouch Motors Ltd
-              </p>
+              {/* SOCIAL MEDIA SECTION */}
+              {activeSocials.length > 0 && (
+                <div
+                  className="
+      mt-12
+      flex
+      flex-wrap
+      items-center
+      gap-4
+      lg:mt-auto
+    "
+                >
+                  {/* SOCIAL ICONS */}
+                  <div
+                    className="flex items-center gap-3"
+                    aria-label="Social media links"
+                  >
+                    {activeSocials.map((social) => (
+                      <a
+                        key={social.name}
+                        href={
+                          businessSettings.socialMedia[social.settingsKey].url
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Visit Scouch Motors on ${social.name}`}
+                        title={social.name}
+                        className="
+            flex
+            h-[45px]
+            w-[45px]
+            shrink-0
+            items-center
+            justify-center
+            rounded-full
+            bg-[rgba(119,174,255,0.21)]
+            transition-[background-color,transform]
+            duration-200
+            hover:-translate-y-1
+            hover:bg-white/20
+            focus-visible:outline-2
+            focus-visible:outline-offset-4
+            focus-visible:outline-white
+            lg:h-[50px]
+            lg:w-[50px]
+          "
+                      >
+                        <img
+                          src={social.icon}
+                          alt=""
+                          aria-hidden="true"
+                          className="
+              block
+              h-[25px]
+              w-[25px]
+              object-contain
+            "
+                        />
+                      </a>
+                    ))}
+                  </div>
 
+                  {/* SOCIAL HANDLE */}
+                  <p
+                    className="
+        text-base
+        font-medium
+        text-white
+        lg:text-[18px]
+      "
+                  >
+                    @ {businessSettings.companyName}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* PAGES */}
           <nav aria-label="Footer pages">
-
             <h3
               className="
                 text-[17px]
@@ -206,35 +276,30 @@ function Footer() {
             </h3>
 
             <ul className="mt-6 space-y-4 lg:space-y-3">
-
               {pageLinks.map((link) => (
                 <li key={link.label}>
-
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="
-                      text-[15px]
-                      font-medium
-                      text-white/75
-                      transition-colors
-                      hover:text-[#F87927]
-                      focus-visible:outline-2
-                      focus-visible:outline-offset-4
-                      focus-visible:outline-white
-                    "
+        text-[15px]
+        font-medium
+        text-white/75
+        transition-colors
+        hover:text-[#F87927]
+        focus-visible:outline-2
+        focus-visible:outline-offset-4
+        focus-visible:outline-white
+      "
                   >
                     {link.label}
-                  </a>
-
+                  </Link>
                 </li>
               ))}
-
             </ul>
           </nav>
 
           {/* QUICK LINKS */}
           <nav aria-label="Footer quick links">
-
             <h3
               className="
                 text-[17px]
@@ -247,35 +312,30 @@ function Footer() {
             </h3>
 
             <ul className="mt-6 space-y-4 lg:space-y-3">
-
               {quickLinks.map((link) => (
                 <li key={link.label}>
-
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="
-                      text-[15px]
-                      font-medium
-                      text-white/75
-                      transition-colors
-                      hover:text-[#F87927]
-                      focus-visible:outline-2
-                      focus-visible:outline-offset-4
-                      focus-visible:outline-white
-                    "
+        text-[15px]
+        font-medium
+        text-white/75
+        transition-colors
+        hover:text-[#F87927]
+        focus-visible:outline-2
+        focus-visible:outline-offset-4
+        focus-visible:outline-white
+      "
                   >
                     {link.label}
-                  </a>
-
+                  </Link>
                 </li>
               ))}
-
             </ul>
           </nav>
 
           {/* OPENING HOURS */}
           <div>
-
             <h3
               className="
                 text-[17px]
@@ -297,24 +357,14 @@ function Footer() {
                 text-white/75
               "
             >
-
-              <p>
-                Monday – Friday
-                <span className="block">
-                  10:00am – 4:00pm GMT
-                </span>
-              </p>
-
-              <p>
-                Saturday
-                <span className="block">
-                  9:00am – 5:00pm GMT
-                </span>
-              </p>
-
+              {businessSettings.openingHours.map((schedule) => (
+                <p key={schedule.label}>
+                  {schedule.label}
+                  <span className="block">{schedule.hours}</span>
+                </p>
+              ))}
             </div>
           </div>
-
         </div>
 
         {/* DIVIDER */}
@@ -337,7 +387,6 @@ function Footer() {
             py-6
           "
         >
-
           <p
             className="
               text-center
@@ -349,12 +398,9 @@ function Footer() {
               lg:text-[18px]
             "
           >
-            Copyright © {currentYear} Scouch Limited.
-            {" "}All rights reserved.
+            Copyright © {currentYear} Scouch Limited. All rights reserved.
           </p>
-
         </div>
-
       </div>
     </footer>
   );
