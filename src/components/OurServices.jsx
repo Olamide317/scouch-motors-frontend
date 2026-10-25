@@ -11,7 +11,7 @@ const services = [
     highlight: "24/7",
     alt: "Vehicles available through Scouch Motors rental services",
     imagePosition: "center",
-    href: "/#vehicles",
+    href: "/vehicles",
   },
   {
     id: "repair",

@@ -8,30 +8,27 @@ import ContactForm from "../components/ContactForm";
 
 function Home() {
   return (
-    <main>
-      <section id="home">
-        <Hero />
-      </section>
+    <main id="home">
+      {/* HOMEPAGE HERO */}
+      <Hero />
 
-      <section id="vehicles">
-        <Vehicles />
-      </section>
+      {/* FEATURED VEHICLES */}
+      <Vehicles featured />
 
-      <section id="services">
-        <OurServices />
-      </section>
+      {/* OUR SERVICES */}
+      <OurServices />
 
-      <section id="about">
-        <AboutUs />
-      </section>
+      {/* ABOUT US */}
+      <AboutUs />
 
+      {/* CONTACT SECTION */}
       <ContactBanner />
 
+      {/* VISIT US */}
       <VisitUs />
 
-      <section id="contact">
-        <ContactForm />
-      </section>
+      {/* CONTACT FORM */}
+      <ContactForm />
     </main>
   );
 }

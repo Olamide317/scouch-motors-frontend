@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 function Login() {
   const [form, setForm] = useState({
@@ -48,6 +48,14 @@ function Login() {
     focus:ring-[#F87927]/10
   `;
 
+  const location = useLocation();
+  const bookingDraft = location.state?.bookingDraft;
+  const accountState = bookingDraft ? { bookingDraft } : undefined;
+
+  const bookingReturnUrl = bookingDraft?.vehicleId
+    ? `/vehicles/${encodeURIComponent(bookingDraft.vehicleId)}/book`
+    : null;
+
   return (
     <main className="bg-[#FAFAFA] px-5 py-12 sm:px-8 lg:py-20">
       <div
@@ -78,14 +86,8 @@ function Login() {
           "
         >
           <div>
-            <Link
-              to="/"
-              className="text-2xl font-extrabold"
-            >
-              <span className="text-[#F87927]">
-                Scouch
-              </span>{" "}
-              Motors Ltd
+            <Link to="/" className="text-2xl font-extrabold">
+              <span className="text-[#F87927]">Scouch</span> Motors Ltd
             </Link>
 
             <div className="mt-12 lg:mt-24">
@@ -122,9 +124,8 @@ function Login() {
                   text-white/75
                 "
               >
-                Sign in to access your account,
-                manage your rental requests,
-                and keep track of your bookings.
+                Sign in to access your account, manage your rental requests, and
+                keep track of your bookings.
               </p>
             </div>
           </div>
@@ -133,6 +134,7 @@ function Login() {
             New to Scouch Motors?{" "}
             <Link
               to="/register"
+              state={accountState}
               className="font-semibold text-[#F87927] hover:underline"
             >
               Create an Account
@@ -143,19 +145,14 @@ function Login() {
         {/* RIGHT LOGIN PANEL */}
         <section className="flex flex-col justify-center p-6 sm:p-10 lg:p-12">
           <div>
-            <h2 className="text-2xl font-bold text-[#233D4D]">
-              Sign In
-            </h2>
+            <h2 className="text-2xl font-bold text-[#233D4D]">Sign In</h2>
 
             <p className="mt-2 text-sm leading-6 text-[#3D3D3D]/65">
               Enter your account details to continue.
             </p>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="mt-8 space-y-6"
-          >
+          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             {/* EMAIL */}
             <div>
               <label
@@ -211,14 +208,8 @@ function Login() {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowPassword((previous) => !previous)
-                  }
-                  aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
-                  }
+                  onClick={() => setShowPassword((previous) => !previous)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   aria-pressed={showPassword}
                   className="
                     absolute
@@ -250,10 +241,9 @@ function Login() {
                   text-[#233D4D]
                 "
               >
-                This is a frontend preview.
-                Login will become available when
-                authentication is connected to the backend.
-                You have not been signed in.
+                This is a frontend preview. Login will become available when
+                authentication is connected to the backend. You have not been
+                signed in.
               </div>
             )}
 
@@ -283,18 +273,14 @@ function Login() {
             {/* MOBILE REGISTER LINK */}
             <p className="text-center text-sm text-[#3D3D3D]/65 lg:hidden">
               Don't have an account?{" "}
-              <Link
-                to="/register"
-                className="font-semibold text-[#F87927]"
-              >
+              <Link to="/register" state={accountState} className="font-semibold text-[#F87927]">
                 Register
               </Link>
             </p>
           </form>
 
           <p className="mt-7 text-center text-xs leading-5 text-[#3D3D3D]/50">
-            Frontend preview — secure authentication
-            is not yet connected.
+            Frontend preview — secure authentication is not yet connected.
           </p>
         </section>
       </div>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import mockVehicles from "../data/mockVehicles";
 import BookingPageHeader from "../components/BookingPageHeader";
 import RentalSummary from "../components/RentalSummary";
@@ -56,22 +56,45 @@ function calculateRentalPrice(days, pricing) {
 
 function RentalBooking() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const savedDraft =
+    location.state?.bookingDraft?.vehicleId === id
+      ? location.state.bookingDraft
+      : null;
 
   const vehicle = mockVehicles.find((item) => item.id === id);
 
-  const [pickupDate, setPickupDate] = useState("");
-  const [pickupTime, setPickupTime] = useState("10:00");
+  const [pickupDate, setPickupDate] = useState(savedDraft?.pickupDate ?? "");
 
-  const [returnDate, setReturnDate] = useState("");
-  const [returnTime, setReturnTime] = useState("10:00");
+  const [pickupTime, setPickupTime] = useState(
+    savedDraft?.pickupTime ?? "10:00",
+  );
 
-  const [pickupMethod, setPickupMethod] = useState("office");
-  const [returnMethod, setReturnMethod] = useState("office");
+  const [returnDate, setReturnDate] = useState(savedDraft?.returnDate ?? "");
 
-  const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [collectionAddress, setCollectionAddress] = useState("");
+  const [returnTime, setReturnTime] = useState(
+    savedDraft?.returnTime ?? "10:00",
+  );
 
-  const [notes, setNotes] = useState("");
+  const [pickupMethod, setPickupMethod] = useState(
+    savedDraft?.pickupMethod ?? "office",
+  );
+
+  const [returnMethod, setReturnMethod] = useState(
+    savedDraft?.returnMethod ?? "office",
+  );
+
+  const [deliveryAddress, setDeliveryAddress] = useState(
+    savedDraft?.deliveryAddress ?? "",
+  );
+
+  const [collectionAddress, setCollectionAddress] = useState(
+    savedDraft?.collectionAddress ?? "",
+  );
+
+  const [notes, setNotes] = useState(savedDraft?.notes ?? "");
 
   const today = getToday();
 
@@ -142,6 +165,27 @@ function RentalBooking() {
     !rental.error &&
     (!requiresDeliveryQuote || deliveryAddress.trim()) &&
     (!requiresCollectionQuote || collectionAddress.trim());
+
+  function handleContinueToAccount() {
+    if (!canPrepareRequest) return;
+
+    const bookingDraft = {
+      vehicleId: vehicle.id,
+      pickupDate,
+      pickupTime,
+      returnDate,
+      returnTime,
+      pickupMethod,
+      returnMethod,
+      deliveryAddress,
+      collectionAddress,
+      notes,
+    };
+
+    navigate("/login", {
+      state: { bookingDraft },
+    });
+  }
 
   return (
     <main className="bg-white px-5 py-12 sm:px-8 lg:px-[4.05%] lg:py-20">
@@ -370,6 +414,7 @@ function RentalBooking() {
             requiresDeliveryQuote={requiresDeliveryQuote}
             requiresCollectionQuote={requiresCollectionQuote}
             canPrepareRequest={canPrepareRequest}
+            onContinue={handleContinueToAccount}
           />
         </div>
       </div>

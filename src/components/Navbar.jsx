@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import businessSettings, { getPhoneUrl } from "../config/businessSettings";
 
 import phoneIcon from "../assets/icons/phone.svg";
@@ -9,7 +9,7 @@ import profileIcon from "../assets/icons/profile.svg";
 
 const navLinks = [
   { name: "Home", href: "/" },
-  { name: "Vehicles", href: "/#vehicles" },
+  { name: "Vehicles", href: "/vehicles" },
   { name: "Our services", href: "/#services" },
   { name: "About Us", href: "/#about" },
   { name: "Contact", href: "/#contact" },
@@ -19,9 +19,85 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
+  const accountMenuRef = useRef(null);
+
+  useEffect(() => {
+    if (!accountOpen) return;
+
+    function handleClickOutside(event) {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(event.target)
+      ) {
+        setAccountOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setAccountOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [accountOpen]);
+
   const { contact } = businessSettings;
 
   const closeMenu = () => setMenuOpen(false);
+
+  const location = useLocation();
+
+  function isActiveLink(link) {
+    const { pathname, hash } = location;
+
+    switch (link.name) {
+      case "Home":
+        return pathname === "/" && (!hash || hash === "#home");
+
+      case "Vehicles":
+        return (
+          pathname === "/vehicles" ||
+          pathname.startsWith("/vehicles/") ||
+          (pathname === "/" && hash === "#vehicles")
+        );
+
+      case "Our services":
+        return hash === "#services" || pathname.startsWith("/services/");
+
+      case "About Us":
+        return pathname === "/" && hash === "#about";
+
+      case "Contact":
+        return pathname === "/" && hash === "#contact";
+
+      default:
+        return false;
+    }
+  }
+
+  const navigate = useNavigate();
+
+  function handleNavbarSearch(event) {
+    event.preventDefault();
+
+    const query = search.trim();
+
+    if (query) {
+      navigate(`/vehicles?q=${encodeURIComponent(query)}`);
+    } else {
+      navigate("/vehicles");
+    }
+
+    setMenuOpen(false);
+    setAccountOpen(false);
+  }
 
   return (
     <header className="w-full font-sans">
@@ -29,14 +105,16 @@ function Navbar() {
       <div className="hidden h-[65px] items-center bg-white px-5 lg:flex lg:px-[5.2%]">
         <div className="flex w-full items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-5 lg:gap-12">
-            <a href={getPhoneUrl(contact.phone)}
+            <a
+              href={getPhoneUrl(contact.phone)}
               className="flex items-center gap-[6px] text-sm text-body-text 2xl:text-xl"
             >
               <img src={phoneIcon} alt="" className="h-[23px] w-[22px]" />
               <span>{contact.phone}</span>
             </a>
 
-            <a href={`mailto:${contact.email}`}
+            <a
+              href={`mailto:${contact.email}`}
               className="flex items-center gap-[6px] text-sm text-body-text 2xl:text-xl"
             >
               <img src={emailIcon} alt="" className="h-[22px] w-[26px]" />
@@ -67,42 +145,81 @@ function Navbar() {
           </Link>
 
           {/* DESKTOP SEARCH */}
-          <div className="hidden h-[60px] min-w-0 max-w-[320px] flex-1 items-center gap-4 rounded-[25px] bg-white/25 px-4 xl:flex 2xl:max-w-[420px]">
-            <img
-              src={searchIcon}
-              alt=""
-              className="h-[25px] w-[25px] shrink-0"
-            />
+          <form
+            onSubmit={handleNavbarSearch}
+            role="search"
+            className="hidden h-[60px] min-w-0 max-w-[320px] flex-1 items-center gap-4 rounded-[25px] bg-white/25 px-4 xl:flex 2xl:max-w-[420px]"
+          >
+            <button
+              type="submit"
+              aria-label="Search vehicles"
+              className="flex shrink-0 items-center justify-center"
+            >
+              <img src={searchIcon} alt="" className="h-[25px] w-[25px]" />
+            </button>
 
             <input
               type="search"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(event) => setSearch(event.target.value)}
               placeholder="Search for a car"
               aria-label="Search for a car"
               className="w-full min-w-0 bg-transparent text-base text-white outline-none placeholder:text-white 2xl:text-xl"
             />
-          </div>
+            {/* CLEAR SEARCH */}
+            {search.trim() !== "" && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                aria-label="Clear search"
+                title="Clear search"
+                className="
+      flex
+      h-8
+      w-8
+      shrink-0
+      items-center
+      justify-center
+      rounded-full
+      text-xl
+      font-medium
+      text-white/75
+      transition-colors
+      hover:bg-white/10
+      hover:text-white
+      focus-visible:outline-2
+      focus-visible:outline-white
+    "
+              >
+                &times;
+              </button>
+            )}
+          </form>
 
           {/* DESKTOP NAVIGATION */}
           <div className="hidden shrink-0 items-center gap-4 xl:flex 2xl:gap-5">
-            {navLinks.map((link, index) => (
-              <Link
-                key={link.name}
-                to={link.href}
-                className={`whitespace-nowrap text-base transition-colors 2xl:text-xl ${
-                  index === 0
-                    ? "font-bold text-secondary underline underline-offset-4"
-                    : "font-medium text-white hover:text-secondary"
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = isActiveLink(link);
+
+              return (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`whitespace-nowrap text-base transition-colors 2xl:text-xl ${
+                    isActive
+                      ? "font-bold text-secondary underline underline-offset-4"
+                      : "font-medium text-white hover:text-secondary"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
 
           {/* DESKTOP ACCOUNT MENU — INSIDE MAIN NAVBAR */}
-          <div className="relative hidden shrink-0 xl:block">
+          <div ref={accountMenuRef} className="relative hidden shrink-0 xl:block">
             <button
               type="button"
               onClick={() => setAccountOpen((prev) => !prev)}
@@ -191,20 +308,25 @@ function Navbar() {
             id="mobile-navigation"
             className="flex flex-col gap-1 border-t border-white/20 py-4 xl:hidden"
           >
-            {navLinks.map((link, index) => (
-              <Link
-                key={link.name}
-                to={link.href}
-                onClick={closeMenu}
-                className={`rounded-md px-3 py-3 text-base transition-colors hover:bg-white/10 ${
-                  index === 0
-                    ? "font-bold text-secondary"
-                    : "font-medium text-white"
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = isActiveLink(link);
+
+              return (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  onClick={closeMenu}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`rounded-md px-3 py-3 text-base transition-colors hover:bg-white/10 ${
+                    isActive
+                      ? "font-bold text-secondary"
+                      : "font-medium text-white"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
 
             {/* MOBILE ACCOUNT LINKS */}
             <div className="mt-3 border-t border-white/20 pt-3">
@@ -256,18 +378,55 @@ function Navbar() {
       <div className="bg-white px-5 py-5 lg:px-[4.05%] xl:hidden">
         <div className="mx-auto flex max-w-xl flex-col gap-3 sm:flex-row">
           {/* MOBILE SEARCH */}
-          <div className="flex min-h-[48px] min-w-0 flex-1 items-center gap-3 rounded-xl border border-light-gray bg-[#F5F6F7] px-4">
-            <img src={searchIcon} alt="" className="h-5 w-5 shrink-0" />
+          <form
+            onSubmit={handleNavbarSearch}
+            role="search"
+            className="flex min-h-[48px] min-w-0 flex-1 items-center gap-3 rounded-xl border border-light-gray bg-[#F5F6F7] px-4"
+          >
+            <button
+              type="submit"
+              aria-label="Search vehicles"
+              className="flex shrink-0 items-center justify-center"
+            >
+              <img src={searchIcon} alt="" className="h-5 w-5" />
+            </button>
 
             <input
               type="search"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(event) => setSearch(event.target.value)}
               placeholder="Search for a car"
               aria-label="Search for a car"
               className="w-full min-w-0 bg-transparent text-sm text-primary outline-none placeholder:text-gray-500"
             />
-          </div>
+            {/* CLEAR MOBILE SEARCH */}
+            {search.trim() !== "" && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                aria-label="Clear search"
+                title="Clear search"
+                className="
+      flex
+      h-8
+      w-8
+      shrink-0
+      items-center
+      justify-center
+      rounded-full
+      text-xl
+      text-[#233D4D]/60
+      transition-colors
+      hover:bg-[#233D4D]/10
+      hover:text-[#233D4D]
+      focus-visible:outline-2
+      focus-visible:outline-[#F87927]
+    "
+              >
+                &times;
+              </button>
+            )}
+          </form>
 
           {/* MOBILE APPOINTMENT BUTTON */}
           <Link

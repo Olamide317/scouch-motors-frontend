@@ -12,12 +12,11 @@ function RentalSummary({
   requiresDeliveryQuote,
   requiresCollectionQuote,
   canPrepareRequest,
+  onContinue,
 }) {
-  const dailyRate =
-    vehicle.pricing?.daily ?? vehicle.pricePerDay;
+  const dailyRate = vehicle.pricing?.daily ?? vehicle.pricePerDay;
 
-  const hasEstimate =
-    rental && !rental.error && !unavailable;
+  const hasEstimate = rental && !rental.error && !unavailable;
 
   return (
     <aside
@@ -31,9 +30,7 @@ function RentalSummary({
         lg:sticky lg:top-8
       "
     >
-      <h2 className="text-xl font-bold text-[#233D4D]">
-        Booking Summary
-      </h2>
+      <h2 className="text-xl font-bold text-[#233D4D]">Booking Summary</h2>
 
       <p className="mt-1 text-sm text-[#3D3D3D]/60">
         Review your selected vehicle and rental estimate.
@@ -57,9 +54,7 @@ function RentalSummary({
           {[
             vehicle.category,
             vehicle.transmission,
-            vehicle.seats != null
-              ? `${vehicle.seats} Seats`
-              : null,
+            vehicle.seats != null ? `${vehicle.seats} Seats` : null,
           ]
             .filter(Boolean)
             .join(" • ")}
@@ -68,14 +63,10 @@ function RentalSummary({
 
       {/* BASE RATE */}
       <div className="mt-6 flex items-center justify-between gap-3">
-        <span className="text-sm text-[#3D3D3D]/70">
-          Daily Rental Rate
-        </span>
+        <span className="text-sm text-[#3D3D3D]/70">Daily Rental Rate</span>
 
         <span className="text-base font-bold text-[#233D4D]">
-          {dailyRate != null
-            ? formatPrice(dailyRate)
-            : "On request"}
+          {dailyRate != null ? formatPrice(dailyRate) : "On request"}
         </span>
       </div>
 
@@ -87,8 +78,7 @@ function RentalSummary({
           role="status"
           className="rounded-xl bg-red-50 p-4 text-sm text-red-700"
         >
-          This vehicle is currently unavailable for new
-          rental requests.
+          This vehicle is currently unavailable for new rental requests.
         </p>
       ) : !hasEstimate ? (
         <div className="rounded-xl bg-[#F5F7F8] p-5">
@@ -97,20 +87,17 @@ function RentalSummary({
           </p>
 
           <p className="mt-2 text-sm leading-6 text-[#3D3D3D]/65">
-            Select your pickup and return dates to see the
-            estimated rental cost.
+            Select your pickup and return dates to see the estimated rental
+            cost.
           </p>
         </div>
       ) : (
         <div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-sm text-[#3D3D3D]/70">
-              Rental Duration
-            </span>
+            <span className="text-sm text-[#3D3D3D]/70">Rental Duration</span>
 
             <span className="font-semibold text-[#233D4D]">
-              {rental.days}{" "}
-              {rental.days === 1 ? "Day" : "Days"}
+              {rental.days} {rental.days === 1 ? "Day" : "Days"}
             </span>
           </div>
 
@@ -125,8 +112,7 @@ function RentalSummary({
                 className="flex items-start justify-between gap-3 text-sm"
               >
                 <span className="text-[#3D3D3D]/70">
-                  {rate.name} ({rate.days}{" "}
-                  {rate.days === 1 ? "day" : "days"})
+                  {rate.name} ({rate.days} {rate.days === 1 ? "day" : "days"})
                 </span>
 
                 <span className="shrink-0 font-semibold text-[#233D4D]">
@@ -149,16 +135,14 @@ function RentalSummary({
             </p>
 
             <p className="mt-2 text-xs leading-5 text-[#233D4D]/70">
-              Excludes any additional charges requiring
-              confirmation.
+              Excludes any additional charges requiring confirmation.
             </p>
           </div>
 
-          {(requiresDeliveryQuote ||
-            requiresCollectionQuote) && (
+          {(requiresDeliveryQuote || requiresCollectionQuote) && (
             <p className="mt-4 text-sm leading-6 text-[#F87927]">
-              Delivery or collection charges require a
-              separate quotation and are not included above.
+              Delivery or collection charges require a separate quotation and
+              are not included above.
             </p>
           )}
         </div>
@@ -168,32 +152,43 @@ function RentalSummary({
       <div className="mt-7">
         <button
           type="button"
-          disabled
+          disabled={!canPrepareRequest}
+          onClick={onContinue}
           className="
-            flex min-h-[54px] w-full items-center
-            justify-center gap-2 rounded-xl
-            bg-[#233D4D] px-5
-            font-semibold text-white opacity-60
-            disabled:cursor-not-allowed
-          "
+    flex
+    min-h-[54px]
+    w-full
+    items-center
+    justify-center
+    gap-2
+    rounded-xl
+    bg-[#233D4D]
+    px-5
+    font-semibold
+    text-white
+    transition-[background-color,transform]
+    duration-200
+    hover:bg-[#34596F]
+    active:scale-[0.99]
+    disabled:cursor-not-allowed
+    disabled:opacity-50
+  "
         >
           Continue to Account Setup
           <span aria-hidden="true">→</span>
         </button>
-
         <p className="mt-3 text-center text-xs leading-5 text-[#3D3D3D]/60">
           {canPrepareRequest
-            ? "Your details are ready for review. Account setup is the next frontend step."
-            : "Complete your rental details before proceeding. Account setup is not yet connected."}
+            ? "Continue to Login or Registration. No booking will be submitted yet."
+            : "Complete the required rental details to continue."}
         </p>
       </div>
 
       {/* DISCLAIMER */}
       <div className="mt-6 border-t border-[#EAECF0] pt-5">
         <p className="text-xs leading-6 text-[#3D3D3D]/60">
-          Demonstration estimate only. Final prices,
-          availability, and rental arrangements require
-          confirmation. No vehicle has been reserved.
+          Demonstration estimate only. Final prices, availability, and rental
+          arrangements require confirmation. No vehicle has been reserved.
         </p>
       </div>
     </aside>

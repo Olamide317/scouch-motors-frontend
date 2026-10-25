@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const initialForm = {
   firstName: "",
@@ -13,8 +13,7 @@ const initialForm = {
 function Register() {
   const [form, setForm] = useState(initialForm);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [previewMessage, setPreviewMessage] = useState(false);
 
   function handleChange(event) {
@@ -36,24 +35,23 @@ function Register() {
   const inputClass =
     "mt-2 block min-h-[52px] w-full rounded-xl border border-[#EAECF0] bg-white px-4 text-sm text-[#233D4D] outline-none transition-colors placeholder:text-[#3D3D3D]/40 focus:border-[#F87927] focus:ring-2 focus:ring-[#F87927]/10";
 
-  const labelClass =
-    "block text-sm font-semibold text-[#233D4D]";
+  const labelClass = "block text-sm font-semibold text-[#233D4D]";
+  const location = useLocation();
+  const bookingDraft = location.state?.bookingDraft;
+  const accountState = bookingDraft ? { bookingDraft } : undefined;
+
+  const bookingReturnUrl = bookingDraft?.vehicleId
+    ? `/vehicles/${encodeURIComponent(bookingDraft.vehicleId)}/book`
+    : null;
 
   return (
     <main className="bg-[#FAFAFA] px-5 py-12 sm:px-8 lg:py-20">
       <div className="mx-auto max-w-[1120px] overflow-hidden rounded-[24px] border border-[#EAECF0] bg-white shadow-[0_12px_40px_rgba(35,61,77,0.05)] lg:grid lg:grid-cols-[0.85fr_1.15fr]">
-
         {/* LEFT BRAND PANEL */}
         <section className="flex flex-col justify-between bg-[#233D4D] p-8 text-white sm:p-10 lg:p-12">
           <div>
-            <Link
-              to="/"
-              className="text-2xl font-extrabold"
-            >
-              <span className="text-[#F87927]">
-                Scouch
-              </span>{" "}
-              Motors Ltd
+            <Link to="/" className="text-2xl font-extrabold">
+              <span className="text-[#F87927]">Scouch</span> Motors Ltd
             </Link>
 
             <div className="mt-12 lg:mt-24">
@@ -66,9 +64,8 @@ function Register() {
               </h1>
 
               <p className="mt-5 max-w-[360px] text-base leading-8 text-white/75">
-                Create an account to manage your rental
-                requests and keep track of your bookings
-                in one place.
+                Create an account to manage your rental requests and keep track
+                of your bookings in one place.
               </p>
             </div>
           </div>
@@ -77,6 +74,7 @@ function Register() {
             Already have an account?{" "}
             <Link
               to="/login"
+              state={accountState}
               className="font-semibold text-[#F87927] hover:underline"
             >
               Sign In
@@ -87,26 +85,18 @@ function Register() {
         {/* REGISTRATION FORM */}
         <section className="p-6 sm:p-10 lg:p-12">
           <div>
-            <h2 className="text-2xl font-bold text-[#233D4D]">
-              Sign Up
-            </h2>
+            <h2 className="text-2xl font-bold text-[#233D4D]">Sign Up</h2>
 
             <p className="mt-2 text-sm leading-6 text-[#3D3D3D]/65">
               Enter your details to get started.
             </p>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="mt-8 space-y-5"
-          >
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {/* NAME FIELDS */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div>
-                <label
-                  htmlFor="register-first-name"
-                  className={labelClass}
-                >
+                <label htmlFor="register-first-name" className={labelClass}>
                   First Name
                 </label>
 
@@ -124,10 +114,7 @@ function Register() {
               </div>
 
               <div>
-                <label
-                  htmlFor="register-last-name"
-                  className={labelClass}
-                >
+                <label htmlFor="register-last-name" className={labelClass}>
                   Last Name
                 </label>
 
@@ -147,10 +134,7 @@ function Register() {
 
             {/* EMAIL */}
             <div>
-              <label
-                htmlFor="register-email"
-                className={labelClass}
-              >
+              <label htmlFor="register-email" className={labelClass}>
                 Email Address
               </label>
 
@@ -169,10 +153,7 @@ function Register() {
 
             {/* PHONE */}
             <div>
-              <label
-                htmlFor="register-phone"
-                className={labelClass}
-              >
+              <label htmlFor="register-phone" className={labelClass}>
                 Phone Number
               </label>
 
@@ -191,10 +172,7 @@ function Register() {
 
             {/* PASSWORD */}
             <div>
-              <label
-                htmlFor="register-password"
-                className={labelClass}
-              >
+              <label htmlFor="register-password" className={labelClass}>
                 Password
               </label>
 
@@ -202,9 +180,7 @@ function Register() {
                 <input
                   id="register-password"
                   name="password"
-                  type={
-                    showPassword ? "text" : "password"
-                  }
+                  type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   placeholder="Enter password"
                   value={form.password}
@@ -216,15 +192,9 @@ function Register() {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowPassword((previous) => !previous)
-                  }
+                  onClick={() => setShowPassword((previous) => !previous)}
                   className="absolute inset-y-0 right-4 mt-2 text-sm font-semibold text-[#233D4D] hover:text-[#F87927]"
-                  aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
-                  }
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
@@ -233,10 +203,7 @@ function Register() {
 
             {/* CONFIRM PASSWORD */}
             <div>
-              <label
-                htmlFor="register-confirm-password"
-                className={labelClass}
-              >
+              <label htmlFor="register-confirm-password" className={labelClass}>
                 Confirm Password
               </label>
 
@@ -244,11 +211,7 @@ function Register() {
                 <input
                   id="register-confirm-password"
                   name="confirmPassword"
-                  type={
-                    showConfirmPassword
-                      ? "text"
-                      : "password"
-                  }
+                  type={showConfirmPassword ? "text" : "password"}
                   autoComplete="new-password"
                   placeholder="Confirm password"
                   value={form.confirmPassword}
@@ -261,9 +224,7 @@ function Register() {
                 <button
                   type="button"
                   onClick={() =>
-                    setShowConfirmPassword(
-                      (previous) => !previous
-                    )
+                    setShowConfirmPassword((previous) => !previous)
                   }
                   className="absolute inset-y-0 right-4 mt-2 text-sm font-semibold text-[#233D4D] hover:text-[#F87927]"
                   aria-label={
@@ -277,12 +238,9 @@ function Register() {
               </div>
             </div>
 
-            {form.confirmPassword &&
-              form.password !== form.confirmPassword && (
-                <p className="text-sm text-red-600">
-                  Passwords do not match.
-                </p>
-              )}
+            {form.confirmPassword && form.password !== form.confirmPassword && (
+              <p className="text-sm text-red-600">Passwords do not match.</p>
+            )}
 
             {/* PREVIEW NOTICE */}
             {previewMessage && (
@@ -290,10 +248,8 @@ function Register() {
                 role="status"
                 className="rounded-xl bg-[#C2E8FF]/35 p-4 text-sm leading-6 text-[#233D4D]"
               >
-                This is a frontend preview. Account
-                registration will be enabled when the
-                backend is connected. No account has been
-                created.
+                This is a frontend preview. Account registration will be enabled
+                when the backend is connected. No account has been created.
               </p>
             )}
 
@@ -311,18 +267,14 @@ function Register() {
 
             <p className="text-center text-sm text-[#3D3D3D]/65 lg:hidden">
               Already have an account?{" "}
-              <Link
-                to="/login"
-                className="font-semibold text-[#F87927]"
-              >
+              <Link to="/login" state={accountState} className="font-semibold text-[#F87927]">
                 Sign In
               </Link>
             </p>
           </form>
 
           <p className="mt-6 text-center text-xs leading-5 text-[#3D3D3D]/50">
-            Frontend preview — account registration
-            is not yet connected.
+            Frontend preview — account registration is not yet connected.
           </p>
         </section>
       </div>

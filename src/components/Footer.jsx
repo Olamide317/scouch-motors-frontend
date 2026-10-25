@@ -9,14 +9,14 @@ import twitterIcon from "../assets/footer/social-3.svg";
 // FOOTER NAVIGATION
 const pageLinks = [
   { label: "Home", href: "/" },
-  { label: "Vehicles", href: "/#vehicles" },
+  { label: "Vehicles", href: "/vehicles" },
   { label: "Our Services", href: "/#services" },
   { label: "About Us", href: "/#about" },
   { label: "Contact", href: "/#contact" },
 ];
 
 const quickLinks = [
-  { label: "Rent/24hrs", href: "/#vehicles" },
+  { label: "Rent/24hrs", href: "/vehicles" },
   { label: "Repair", href: "/services/repair" },
 ];
 
@@ -138,56 +138,9 @@ function Footer() {
             </h2>
 
             {/* SOCIAL MEDIA SECTION */}
-            <div
-              className="
-                mt-12
-                flex
-                flex-wrap
-                items-center
-                gap-4
-                lg:mt-auto
-              "
-            >
-              {/* ICONS */}
+            {activeSocials.length > 0 && (
               <div
-                className="flex items-center gap-3"
-                aria-label="Social media icons"
-              >
-                {socialIcons.map((social) => (
-                  <div
-                    key={social.name}
-                    title={social.name}
-                    className="
-                      flex
-                      h-[45px]
-                      w-[45px]
-                      shrink-0
-                      items-center
-                      justify-center
-                      rounded-full
-                      bg-[rgba(119,174,255,0.21)]
-                      lg:h-[50px]
-                      lg:w-[50px]
-                    "
-                  >
-                    <img
-                      src={social.icon}
-                      alt={social.name}
-                      className="
-                        block
-                        h-[25px]
-                        w-[25px]
-                        object-contain
-                      "
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* SOCIAL MEDIA SECTION */}
-              {activeSocials.length > 0 && (
-                <div
-                  className="
+                className="
       mt-12
       flex
       flex-wrap
@@ -195,23 +148,21 @@ function Footer() {
       gap-4
       lg:mt-auto
     "
+              >
+                <div
+                  className="flex items-center gap-3"
+                  aria-label="Social media links"
                 >
-                  {/* SOCIAL ICONS */}
-                  <div
-                    className="flex items-center gap-3"
-                    aria-label="Social media links"
-                  >
-                    {activeSocials.map((social) => (
-                      <a
-                        key={social.name}
-                        href={
-                          businessSettings.socialMedia[social.settingsKey].url
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`Visit Scouch Motors on ${social.name}`}
-                        title={social.name}
-                        className="
+                  {activeSocials.map((social) => (
+                    <a
+                      key={social.name}
+                      href={
+                        businessSettings.socialMedia[social.settingsKey].url
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Visit Scouch Motors on ${social.name}`}
+                      className="
             flex
             h-[45px]
             w-[45px]
@@ -230,36 +181,22 @@ function Footer() {
             lg:h-[50px]
             lg:w-[50px]
           "
-                      >
-                        <img
-                          src={social.icon}
-                          alt=""
-                          aria-hidden="true"
-                          className="
-              block
-              h-[25px]
-              w-[25px]
-              object-contain
-            "
-                        />
-                      </a>
-                    ))}
-                  </div>
-
-                  {/* SOCIAL HANDLE */}
-                  <p
-                    className="
-        text-base
-        font-medium
-        text-white
-        lg:text-[18px]
-      "
-                  >
-                    @ {businessSettings.companyName}
-                  </p>
+                    >
+                      <img
+                        src={social.icon}
+                        alt=""
+                        aria-hidden="true"
+                        className="h-[25px] w-[25px] object-contain"
+                      />
+                    </a>
+                  ))}
                 </div>
-              )}
-            </div>
+
+                <p className="text-base font-medium text-white lg:text-[18px]">
+                  @ {businessSettings.companyName}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* PAGES */}

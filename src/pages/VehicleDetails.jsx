@@ -17,9 +17,7 @@ function VehicleDetails() {
   if (!vehicle) {
     return (
       <main className="mx-auto max-w-[1200px] px-6 py-24 text-center">
-        <h1 className="text-3xl font-bold text-[#233D4D]">
-          Vehicle not found
-        </h1>
+        <h1 className="text-3xl font-bold text-[#233D4D]">Vehicle not found</h1>
 
         <p className="mt-4 text-[#3D3D3D]/70">
           The requested vehicle does not exist.
@@ -46,6 +44,9 @@ function VehicleDetails() {
     vehicle.status !== "maintenance" &&
     vehicle.status !== "inactive";
 
+  const hasMultipleImages =
+    Array.isArray(vehicle.images) && vehicle.images.filter(Boolean).length > 1;
+
   const specifications = [
     ["Brand", vehicle.brand],
     ["Model", vehicle.model],
@@ -66,7 +67,6 @@ function VehicleDetails() {
   return (
     <main className="bg-white px-5 py-10 sm:px-8 lg:px-[4.05%] lg:py-16">
       <div className="mx-auto max-w-[1400px]">
-
         {/* BREADCRUMB */}
         <nav aria-label="Breadcrumb" className="mb-8">
           <Link
@@ -85,15 +85,21 @@ function VehicleDetails() {
 
         {/* VEHICLE OVERVIEW */}
         <section className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-12">
-
           {/* LEFT: VEHICLE GALLERY */}
-          <div>
-            <VehicleGallery key={vehicle.id} vehicle={vehicle} />
+          <div
+            className={
+              hasMultipleImages
+                ? "w-full"
+                : "w-full lg:flex lg:self-stretch lg:items-center"
+            }
+          >
+            <div className="w-full">
+              <VehicleGallery key={vehicle.id} vehicle={vehicle} />
+            </div>
           </div>
 
           {/* RIGHT: VEHICLE INFORMATION */}
           <div className="flex flex-col">
-
             {/* CATEGORY */}
             <p className="text-sm font-semibold uppercase tracking-wider text-[#F87927]">
               {vehicle.category}
@@ -118,9 +124,7 @@ function VehicleDetails() {
                 </span>
 
                 {pricing.daily != null && (
-                  <span className="text-base text-[#3D3D3D]/65">
-                    / day
-                  </span>
+                  <span className="text-base text-[#3D3D3D]/65">/ day</span>
                 )}
               </div>
             </div>
@@ -185,9 +189,7 @@ function VehicleDetails() {
                       py-3
                     "
                   >
-                    <p className="text-xs text-[#3D3D3D]/60">
-                      {label}
-                    </p>
+                    <p className="text-xs text-[#3D3D3D]/60">{label}</p>
 
                     <p className="mt-1 break-words text-sm font-semibold text-[#233D4D] sm:text-base">
                       {value ?? "—"}
@@ -213,9 +215,7 @@ function VehicleDetails() {
 
         {/* RENTAL PRICING */}
         <section className="mt-14 lg:mt-16">
-          <h2 className="text-2xl font-bold text-[#233D4D]">
-            Rental Pricing
-          </h2>
+          <h2 className="text-2xl font-bold text-[#233D4D]">Rental Pricing</h2>
 
           <p className="mt-2 text-sm text-[#3D3D3D]/65">
             Explore the available rental rate options.
@@ -257,8 +257,8 @@ function VehicleDetails() {
           </div>
 
           <p className="mt-5 text-sm leading-relaxed text-[#3D3D3D]/60">
-            Demonstration prices only. Final rental rates, additional
-            charges, and vehicle availability require confirmation.
+            Demonstration prices only. Final rental rates, additional charges,
+            and vehicle availability require confirmation.
           </p>
         </section>
 

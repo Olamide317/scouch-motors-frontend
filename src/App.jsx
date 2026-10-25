@@ -11,6 +11,8 @@ import RentalBooking from "./pages/RentalBooking";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import RepairMaintenance from "./pages/RepairMaintenance";
+import BrowseVehicles from "./pages/BrowseVehicles";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -32,6 +34,10 @@ function App() {
           <Route path="/register" element={<Register />} />
           
           <Route path="/login" element={<Login />} />
+
+          <Route path="/vehicles" element={<BrowseVehicles />} />
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
 
         <Footer />

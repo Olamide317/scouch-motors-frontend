@@ -1,16 +1,43 @@
 import contactCar from "../assets/contact/contact-car.png";
+import businessSettings from "../config/businessSettings";
 
 import facebookIcon from "../assets/contact/icons/facebook.svg";
 import instagramIcon from "../assets/contact/icons/instagram.svg";
 import twitterIcon from "../assets/contact/icons/twitter.svg";
 
 const socialIcons = [
-  { name: "Facebook", icon: facebookIcon },
-  { name: "Instagram", icon: instagramIcon },
-  { name: "Twitter", icon: twitterIcon },
+  {
+    name: "Facebook",
+    icon: facebookIcon,
+    settingsKey: "facebook",
+  },
+  {
+    name: "Instagram",
+    icon: instagramIcon,
+    settingsKey: "instagram",
+  },
+  {
+    name: "Twitter",
+    icon: twitterIcon,
+    settingsKey: "twitter",
+  },
 ];
 
 function ContactBanner() {
+  const activeSocials = socialIcons.filter((social) => {
+    const settings = businessSettings.socialMedia?.[social.settingsKey];
+
+    if (!settings?.enabled || !settings.url) {
+      return false;
+    }
+
+    try {
+      return new URL(settings.url).protocol === "https:";
+    } catch {
+      return false;
+    }
+  });
+
   return (
     <section
       id="contact"
@@ -165,57 +192,71 @@ function ContactBanner() {
             </p>
 
             {/* SOCIAL MEDIA */}
-            <div
-              className="
-                mt-8
-                flex
-                flex-wrap
-                items-center
-                gap-3
-                lg:mt-[50px]
-                lg:gap-5
-              "
-            >
-              <div className="flex items-center gap-3 lg:gap-4">
-                {socialIcons.map((social) => (
-                  <div
-                    key={social.name}
-                    title={social.name}
-                    className="
-                      flex
-                      h-[48px]
-                      w-[48px]
-                      shrink-0
-                      items-center
-                      justify-center
-                      overflow-hidden
-                      rounded-full
-                      lg:h-[60px]
-                      lg:w-[60px]
-                    "
-                  >
-                    <img
-                      src={social.icon}
-                      alt={social.name}
-                      className="block h-full w-full object-contain"
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <span
+            {activeSocials.length > 0 && (
+              <div
                 className="
-                  text-base
-                  font-medium
-                  whitespace-nowrap
-                  text-[#233D4D]/80
-                  sm:text-lg
-                  lg:text-[clamp(16px,1.4vw,22px)]
-                "
+      mt-8
+      flex
+      flex-wrap
+      items-center
+      gap-3
+      lg:mt-[50px]
+      lg:gap-5
+    "
               >
-                @ Scouch Motors Ltd
-              </span>
-            </div>
+                <div className="flex items-center gap-3 lg:gap-4">
+                  {activeSocials.map((social) => (
+                    <a
+                      key={social.name}
+                      href={
+                        businessSettings.socialMedia[social.settingsKey].url
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Visit Scouch Motors on ${social.name}`}
+                      className="
+            flex
+            h-[48px]
+            w-[48px]
+            shrink-0
+            items-center
+            justify-center
+            overflow-hidden
+            rounded-full
+            transition-transform
+            duration-200
+            hover:scale-105
+            focus-visible:outline-2
+            focus-visible:outline-offset-4
+            focus-visible:outline-[#F87927]
+            lg:h-[60px]
+            lg:w-[60px]
+          "
+                    >
+                      <img
+                        src={social.icon}
+                        alt=""
+                        aria-hidden="true"
+                        className="block h-full w-full object-contain"
+                      />
+                    </a>
+                  ))}
+                </div>
+
+                <span
+                  className="
+        whitespace-nowrap
+        text-base
+        font-medium
+        text-[#233D4D]/80
+        sm:text-lg
+        lg:text-[clamp(16px,1.4vw,22px)]
+      "
+                >
+                  @ {businessSettings.companyName}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
