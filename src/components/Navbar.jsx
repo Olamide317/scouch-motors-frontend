@@ -219,7 +219,10 @@ function Navbar() {
           </div>
 
           {/* DESKTOP ACCOUNT MENU — INSIDE MAIN NAVBAR */}
-          <div ref={accountMenuRef} className="relative hidden shrink-0 xl:block">
+          <div
+            ref={accountMenuRef}
+            className="relative hidden shrink-0 xl:block"
+          >
             <button
               type="button"
               onClick={() => setAccountOpen((prev) => !prev)}
@@ -376,12 +379,29 @@ function Navbar() {
 
       {/* MOBILE SEARCH AND APPOINTMENT SECTION */}
       <div className="bg-white px-5 py-5 lg:px-[4.05%] xl:hidden">
-        <div className="mx-auto flex max-w-xl flex-col gap-3 sm:flex-row">
+        <div className="mx-auto flex max-w-xl flex-col gap-3">
           {/* MOBILE SEARCH */}
           <form
             onSubmit={handleNavbarSearch}
             role="search"
-            className="flex min-h-[48px] min-w-0 flex-1 items-center gap-3 rounded-xl border border-light-gray bg-[#F5F6F7] px-4"
+            className="
+  flex
+  min-h-[52px]
+  min-w-0
+  flex-1
+  items-center
+  gap-3
+  rounded-xl
+  border
+  border-[#CBD5DF]
+  bg-[#F0F3F6]
+  px-4
+  shadow-sm
+  transition-colors
+  focus-within:border-[#F87927]
+  focus-within:ring-2
+  focus-within:ring-[#F87927]/15
+"
           >
             <button
               type="submit"
@@ -397,7 +417,17 @@ function Navbar() {
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search for a car"
               aria-label="Search for a car"
-              className="w-full min-w-0 bg-transparent text-sm text-primary outline-none placeholder:text-gray-500"
+              className="
+  w-full
+  min-w-0
+  bg-transparent
+  text-sm
+  font-medium
+  text-[#233D4D]
+  outline-none
+  placeholder:font-normal
+  placeholder:text-[#526575]
+"
             />
             {/* CLEAR MOBILE SEARCH */}
             {search.trim() !== "" && (

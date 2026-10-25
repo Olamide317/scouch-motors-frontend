@@ -330,61 +330,86 @@ function Vehicles({ browseMode = false, featured = false }) {
         {/* VEHICLE CATEGORY TABS */}
         <div
           className="
-            mt-12
-            grid
-            w-full
-            max-w-[1524px]
-            grid-cols-2
-            justify-items-center
-            gap-x-4
-            gap-y-4
-            sm:grid-cols-3
-            lg:grid-cols-6
-          "
+    mt-10
+    w-full
+    min-w-0
+    overflow-x-auto
+    pb-3
+    lg:mt-12
+  "
           role="group"
           aria-label="Vehicle categories"
         >
-          {categories.map((category) => {
-            const isActive = !isGlobalView && activeCategory === category;
+          <div
+            className="
+    mx-auto
+    flex
+    w-max
+    items-center
+    gap-3
+    px-1
+    snap-x
+    snap-proximity
 
-            const isWide =
-              category === "Super Cars" || category === "Luxury Cars";
+    lg:grid
+    lg:w-full
+    lg:max-w-[1524px]
+    lg:grid-cols-6
+    lg:justify-items-center
+    lg:gap-4
+    lg:px-0
+  "
+          >
+            {categories.map((category) => {
+              const isActive = !isGlobalView && activeCategory === category;
 
-            return (
-              <button
-                key={category}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => handleCategory(category)}
-                className={`
-                  flex
-                  h-[50px]
-                  items-center
-                  justify-center
-                  whitespace-nowrap
-                  rounded-[13px]
-                  px-4
-                  text-sm
-                  transition-colors
-                  sm:text-base
-                  2xl:text-[20px]
-                  ${
-                    isWide
-                      ? "w-[130px] 2xl:w-[210px]"
-                      : "w-[105px] 2xl:w-[151px]"
-                  }
-                  ${
-                    isActive
-                      ? "bg-[rgba(248,121,39,0.17)] font-bold text-[#F87927]"
-                      : "bg-[#F5F5F5] font-medium text-[#626262] hover:bg-gray-200"
-                  }
-                `}
-              >
-                {category}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => handleCategory(category)}
+                  className={`
+            flex
+            h-[44px]
+            shrink-0
+            snap-start
+            items-center
+            justify-center
+            whitespace-nowrap
+            rounded-full
+            px-5
+            text-sm
+            transition-colors
+            duration-200
+
+            sm:h-[48px]
+            sm:text-base
+
+            lg:h-[50px]
+            lg:rounded-[13px]
+            lg:px-4
+
+            2xl:text-[20px]
+
+            ${
+              isActive
+                ? "bg-[rgba(248,121,39,0.17)] font-bold text-[#F87927]"
+                : "bg-[#F5F5F5] font-medium text-[#626262] hover:bg-gray-200"
+            }
+          `}
+                >
+                  {category}
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {/* MOBILE CATEGORY SCROLL HINT */}
+        <p className="mt-1 text-center text-xs text-[#3D3D3D]/55 lg:hidden">
+          Swipe sideways to explore categories
+        </p>
 
         {/* MANUFACTURER SELECTOR */}
         <div
