@@ -40,10 +40,6 @@ function Register() {
   const bookingDraft = location.state?.bookingDraft;
   const accountState = bookingDraft ? { bookingDraft } : undefined;
 
-  const bookingReturnUrl = bookingDraft?.vehicleId
-    ? `/vehicles/${encodeURIComponent(bookingDraft.vehicleId)}/book`
-    : null;
-
   return (
     <main className="bg-[#FAFAFA] px-5 py-12 sm:px-8 lg:py-20">
       <div className="mx-auto max-w-[1120px] overflow-hidden rounded-[24px] border border-[#EAECF0] bg-white shadow-[0_12px_40px_rgba(35,61,77,0.05)] lg:grid lg:grid-cols-[0.85fr_1.15fr]">

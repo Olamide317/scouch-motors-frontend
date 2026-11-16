@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
+import { apiRequest, saveAccessToken } from "../services/api";
 
 function Login() {
   const [form, setForm] = useState({
@@ -8,7 +10,9 @@ function Login() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-  const [previewMessage, setPreviewMessage] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -18,14 +22,42 @@ function Login() {
       [name]: value,
     }));
 
-    setPreviewMessage(false);
+    setError("");
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    // Frontend preview only — no authentication yet.
-    setPreviewMessage(true);
+    if (loading) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const result = await apiRequest("/api/auth/login", {
+        method: "POST",
+        body: {
+          email: form.email.trim(),
+          password: form.password,
+        },
+      });
+
+      if (!result?.token || !result?.user) {
+        throw new Error("Invalid login response.");
+      }
+
+      saveAccessToken(result.token);
+
+      // We'll show bookings belonging to this
+      // authenticated customer.
+      navigate("/my-bookings", {
+        replace: true,
+      });
+    } catch (err) {
+      setError(err.message || "Unable to sign in.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const inputClass = `
@@ -51,10 +83,6 @@ function Login() {
   const location = useLocation();
   const bookingDraft = location.state?.bookingDraft;
   const accountState = bookingDraft ? { bookingDraft } : undefined;
-
-  const bookingReturnUrl = bookingDraft?.vehicleId
-    ? `/vehicles/${encodeURIComponent(bookingDraft.vehicleId)}/book`
-    : null;
 
   return (
     <main className="bg-[#FAFAFA] px-5 py-12 sm:px-8 lg:py-20">
@@ -229,27 +257,19 @@ function Login() {
             </div>
 
             {/* DEMO FEEDBACK */}
-            {previewMessage && (
-              <div
-                role="status"
-                className="
-                  rounded-xl
-                  bg-[#C2E8FF]/35
-                  p-4
-                  text-sm
-                  leading-6
-                  text-[#233D4D]
-                "
+            {error && (
+              <p
+                role="alert"
+                className="rounded-xl bg-red-50 p-4 text-sm text-red-700"
               >
-                This is a frontend preview. Login will become available when
-                authentication is connected to the backend. You have not been
-                signed in.
-              </div>
+                {error}
+              </p>
             )}
 
             {/* LOGIN BUTTON */}
             <button
               type="submit"
+              disabled={loading}
               className="
                 flex
                 min-h-[54px]
@@ -267,13 +287,17 @@ function Login() {
                 active:scale-[0.99]
               "
             >
-              Sign In
+              {loading ? "Signing In..." : "Sign In"}
             </button>
 
             {/* MOBILE REGISTER LINK */}
             <p className="text-center text-sm text-[#3D3D3D]/65 lg:hidden">
               Don't have an account?{" "}
-              <Link to="/register" state={accountState} className="font-semibold text-[#F87927]">
+              <Link
+                to="/register"
+                state={accountState}
+                className="font-semibold text-[#F87927]"
+              >
                 Register
               </Link>
             </p>

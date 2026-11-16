@@ -13,6 +13,8 @@ import Login from "./pages/Login";
 import RepairMaintenance from "./pages/RepairMaintenance";
 import BrowseVehicles from "./pages/BrowseVehicles";
 import NotFound from "./pages/NotFound";
+import MyBookings from "./pages/MyBookings";
+import PaymentResult from "./pages/PaymentResult";
 
 function App() {
   return (
@@ -32,12 +34,16 @@ function App() {
           <Route path="/services/repair" element={<RepairMaintenance />} />
 
           <Route path="/register" element={<Register />} />
-          
+
           <Route path="/login" element={<Login />} />
 
           <Route path="/vehicles" element={<BrowseVehicles />} />
 
           <Route path="*" element={<NotFound />} />
+
+          <Route path="/my-bookings" element={<MyBookings />} />
+
+          <Route path="/payments/test/result" element={<PaymentResult />} />
         </Routes>
 
         <Footer />
