@@ -7,12 +7,15 @@ import climateIcon from "../assets/vehicles/specs/climate.svg";
 import seatsIcon from "../assets/vehicles/specs/seats.svg";
 import ratingIcon from "../assets/vehicles/specs/rating.svg";
 
-const formatPrice = (price) =>
-  new Intl.NumberFormat("en-NG", {
+const formatPrice = (price) => {
+  if (price == null) return "On request";
+
+  return new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: "NGN",
     maximumFractionDigits: 0,
   }).format(price);
+};
 
 function VehicleCard({ vehicle, onBook }) {
   const specs = [
@@ -129,23 +132,44 @@ function VehicleCard({ vehicle, onBook }) {
           justify-center
         "
       >
-        <img
-          src={vehicle.image}
-          alt={vehicle.name}
-          loading="lazy"
-          decoding="async"
-          className="
-            block
-            max-h-full
-            max-w-full
-            object-contain
-            transition-transform
-            duration-300
-            ease-out
-            group-hover:scale-[1.04]
-            motion-reduce:transition-none
-          "
-        />
+        {vehicle.image ? (
+          <img
+            src={vehicle.image}
+            alt={vehicle.name}
+            loading="lazy"
+            decoding="async"
+            className="
+              block
+              max-h-full
+              max-w-full
+              object-contain
+              transition-transform
+              duration-300
+              ease-out
+              group-hover:scale-[1.04]
+              motion-reduce:transition-none
+            "
+          />
+        ) : (
+          <div
+            className="
+              flex
+              h-full
+              w-full
+              items-center
+              justify-center
+              rounded-lg
+              bg-[#EAECF0]
+              px-3
+              text-center
+              text-xs
+              font-medium
+              text-[#233D4D]/70
+            "
+          >
+            Image coming soon
+          </div>
+        )}
       </div>
 
       {/* VEHICLE SPECIFICATIONS PANEL */}
@@ -224,16 +248,18 @@ function VehicleCard({ vehicle, onBook }) {
           {formatPrice(vehicle.pricePerDay)}
         </span>
 
-        <span
-          className="
-            ml-[0.5cqw]
-            text-[4cqw]
-            font-medium
-            text-[#3D3D3D]/80
-          "
-        >
-          / Day
-        </span>
+        {vehicle.pricePerDay != null && (
+          <span
+            className="
+              ml-[0.5cqw]
+              text-[4cqw]
+              font-medium
+              text-[#3D3D3D]/80
+            "
+          >
+            / Day
+          </span>
+        )}
       </p>
 
       {/* BOOK BUTTON */}
@@ -241,7 +267,7 @@ function VehicleCard({ vehicle, onBook }) {
         type="button"
         disabled={!canBook}
         onClick={() => onBook?.(vehicle)}
-        aria-label={`Book ${vehicle.name}`}
+        aria-label={`View booking options for ${vehicle.name}`}
         className="
           absolute
           right-[3.2%]
@@ -267,6 +293,7 @@ function VehicleCard({ vehicle, onBook }) {
           focus-visible:outline-[#F87927]
           disabled:cursor-not-allowed
           disabled:opacity-60
+          motion-reduce:transform-none
           motion-reduce:transition-none
         "
       >

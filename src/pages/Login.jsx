@@ -48,10 +48,14 @@ function Login() {
 
       saveAccessToken(result.token);
 
-      // We'll show bookings belonging to this
-      // authenticated customer.
-      navigate("/my-bookings", {
+      const destination =
+        bookingDraft && /^[a-fA-F0-9]{24}$/.test(bookingDraft.vehicleId)
+          ? `/vehicles/${bookingDraft.vehicleId}/book`
+          : "/my-bookings";
+
+      navigate(destination, {
         replace: true,
+        state: bookingDraft ? { bookingDraft } : undefined,
       });
     } catch (err) {
       setError(err.message || "Unable to sign in.");
@@ -304,7 +308,7 @@ function Login() {
           </form>
 
           <p className="mt-7 text-center text-xs leading-5 text-[#3D3D3D]/50">
-            Frontend preview — secure authentication is not yet connected.
+            Secure sign-in is connected to the Scouch Motors server.
           </p>
         </section>
       </div>

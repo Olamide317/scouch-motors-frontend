@@ -1,30 +1,85 @@
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import VehicleGallery from "../components/VehicleGallery";
-import mockVehicles from "../data/mockVehicles";
 
-const formatPrice = (price) =>
-  new Intl.NumberFormat("en-NG", {
+import VehicleGallery from "../components/VehicleGallery";
+
+import { getPublicVehicleById } from "../services/vehicleService";
+
+const formatPrice = (price) => {
+  if (price == null) return "Contact for pricing";
+
+  return new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: "NGN",
     maximumFractionDigits: 0,
   }).format(price);
+};
 
 function VehicleDetails() {
   const { id } = useParams();
 
-  const vehicle = mockVehicles.find((item) => item.id === id);
+  const [vehicle, setVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  if (!vehicle) {
+  // Retrieve the selected vehicle from MongoDB.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadVehicle() {
+      setLoading(true);
+      setError("");
+      setVehicle(null);
+
+      try {
+        const result = await getPublicVehicleById(id);
+
+        if (!cancelled) {
+          setVehicle(result);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || "Unable to load vehicle details.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadVehicle();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  // LOADING STATE
+  if (loading) {
     return (
       <main className="mx-auto max-w-[1200px] px-6 py-24 text-center">
-        <h1 className="text-3xl font-bold text-[#233D4D]">Vehicle not found</h1>
+        <p role="status" className="text-[#233D4D]">
+          Loading vehicle details...
+        </p>
+      </main>
+    );
+  }
 
-        <p className="mt-4 text-[#3D3D3D]/70">
-          The requested vehicle does not exist.
+  // ERROR OR MISSING VEHICLE
+  if (error || !vehicle) {
+    return (
+      <main className="mx-auto max-w-[1200px] px-6 py-24 text-center">
+        <h1 className="text-3xl font-bold text-[#233D4D]">
+          Vehicle unavailable
+        </h1>
+
+        <p role="alert" className="mt-4 text-[#3D3D3D]/70">
+          {error || "The requested vehicle does not exist."}
         </p>
 
         <Link
-          to="/#vehicles"
+          to="/vehicles"
           className="mt-8 inline-block rounded-xl bg-[#233D4D] px-6 py-3 text-white transition-colors hover:bg-[#34596F]"
         >
           Back to Vehicles
@@ -33,16 +88,10 @@ function VehicleDetails() {
     );
   }
 
-  const pricing = vehicle.pricing ?? {
-    daily: vehicle.pricePerDay,
-    weekly: null,
-    monthly: null,
-  };
+  // VEHICLE INFORMATION
+  const pricing = vehicle.pricing ?? {};
 
-  const canBook =
-    vehicle.available &&
-    vehicle.status !== "maintenance" &&
-    vehicle.status !== "inactive";
+  const canBook = vehicle.available === true;
 
   const hasMultipleImages =
     Array.isArray(vehicle.images) && vehicle.images.filter(Boolean).length > 1;
@@ -54,14 +103,26 @@ function VehicleDetails() {
     ["Category", vehicle.category],
     ["Transmission", vehicle.transmission],
     ["Fuel Type", vehicle.fuelType],
-    ["Climate Control", vehicle.climateControl],
     ["Seats", vehicle.seats],
+    ["Operational Status", canBook ? "Available" : "Unavailable"],
   ];
 
   const rentalRates = [
-    { label: "Daily", price: pricing.daily, period: "day" },
-    { label: "Weekly", price: pricing.weekly, period: "week" },
-    { label: "Monthly", price: pricing.monthly, period: "month" },
+    {
+      label: "Daily",
+      price: pricing.daily,
+      period: "day",
+    },
+    {
+      label: "Weekly",
+      price: pricing.weekly,
+      period: "week",
+    },
+    {
+      label: "Monthly",
+      price: pricing.monthly,
+      period: "month",
+    },
   ];
 
   return (
@@ -70,7 +131,7 @@ function VehicleDetails() {
         {/* BREADCRUMB */}
         <nav aria-label="Breadcrumb" className="mb-8">
           <Link
-            to="/#vehicles"
+            to="/vehicles"
             className="text-sm font-medium text-[#233D4D]/70 transition-colors hover:text-[#F87927]"
           >
             Vehicles
@@ -118,9 +179,7 @@ function VehicleDetails() {
 
               <div className="mt-1 flex flex-wrap items-baseline gap-2">
                 <span className="text-3xl font-bold text-[#233D4D] sm:text-[36px]">
-                  {pricing.daily != null
-                    ? formatPrice(pricing.daily)
-                    : "Contact for pricing"}
+                  {formatPrice(pricing.daily)}
                 </span>
 
                 {pricing.daily != null && (
@@ -129,29 +188,12 @@ function VehicleDetails() {
               </div>
             </div>
 
-            {/* BOOKING BUTTON */}
+            {/* BOOKING SECTION */}
             <div className="mt-6">
               {canBook ? (
                 <Link
                   to={`/vehicles/${vehicle.id}/book`}
-                  className="
-                    inline-flex
-                    min-h-[52px]
-                    w-full
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-[#233D4D]
-                    px-8
-                    text-base
-                    font-semibold
-                    text-white
-                    transition-[background-color,transform]
-                    duration-200
-                    hover:bg-[#34596F]
-                    active:scale-[0.99]
-                    sm:w-auto
-                  "
+                  className="inline-flex min-h-[52px] w-full items-center justify-center rounded-xl bg-[#233D4D] px-8 text-base font-semibold text-white transition-colors hover:bg-[#34596F] sm:w-auto"
                 >
                   Continue to Booking
                   <span aria-hidden="true" className="ml-2">
@@ -166,12 +208,12 @@ function VehicleDetails() {
 
               <p className="mt-3 text-xs leading-relaxed text-[#3D3D3D]/60">
                 {canBook
-                  ? "Vehicle availability for your selected dates is subject to confirmation."
+                  ? "This vehicle is listed as operationally available. Availability for selected rental dates still needs to be checked."
                   : "This vehicle is not currently accepting rental requests."}
               </p>
             </div>
 
-            {/* SPECIFICATIONS */}
+            {/* VEHICLE SPECIFICATIONS */}
             <div className="mt-8 border-t border-[#EAECF0] pt-6">
               <h2 className="text-xl font-bold text-[#233D4D]">
                 Vehicle Specifications
@@ -204,12 +246,12 @@ function VehicleDetails() {
         {/* ABOUT VEHICLE */}
         <section className="mt-14 border-t border-[#EAECF0] pt-10 lg:mt-16">
           <h2 className="text-2xl font-bold text-[#233D4D]">
-            About this Vehicle
+            About This Vehicle
           </h2>
 
           <p className="mt-4 max-w-[900px] text-base leading-8 text-[#3D3D3D]/75">
-            {vehicle.description ??
-              "Explore this vehicle's specifications and rental options."}
+            {vehicle.description ||
+              "Additional information about this vehicle is not yet available."}
           </p>
         </section>
 
@@ -242,9 +284,7 @@ function VehicleDetails() {
                 </p>
 
                 <p className="mt-3 text-2xl font-bold text-[#233D4D]">
-                  {rate.price != null
-                    ? formatPrice(rate.price)
-                    : "Contact for pricing"}
+                  {formatPrice(rate.price)}
                 </p>
 
                 {rate.price != null && (
@@ -257,15 +297,16 @@ function VehicleDetails() {
           </div>
 
           <p className="mt-5 text-sm leading-relaxed text-[#3D3D3D]/60">
-            Demonstration prices only. Final rental rates, additional charges,
-            and vehicle availability require confirmation.
+            Rental rates are retrieved from our vehicle inventory. Final
+            quotations depend on rental duration, availability, and the
+            applicable pricing policy.
           </p>
         </section>
 
         {/* BOTTOM NAVIGATION */}
         <div className="mt-14 border-t border-[#EAECF0] pt-8">
           <Link
-            to="/#vehicles"
+            to="/vehicles"
             className="inline-flex items-center gap-2 text-sm font-semibold text-[#233D4D] transition-colors hover:text-[#F87927]"
           >
             <span aria-hidden="true">←</span>

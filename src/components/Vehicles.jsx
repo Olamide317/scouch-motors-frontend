@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import searchIcon from "../assets/icons/search.svg";
 import VehicleCard from "./VehicleCard";
-import mockVehicles from "../data/mockVehicles";
+import { getPublicVehicles } from "../services/vehicleService";
 
 import lexusLogo from "../assets/vehicles/brands/lexus.png";
 import mercedesLogo from "../assets/vehicles/brands/mercedes.png";
@@ -32,6 +32,7 @@ const manufacturers = [
   { name: "BMW", logo: bmwLogo },
 ];
 
+// NORMALIZE CATEGORY LABELS
 function getCategory(vehicle) {
   if (
     vehicle.category === "Luxury SUV" ||
@@ -43,6 +44,7 @@ function getCategory(vehicle) {
   return vehicle.category;
 }
 
+// GET VEHICLE MANUFACTURER
 function getBrand(vehicle) {
   return vehicle.brand || vehicle.name.split(" ")[0];
 }
@@ -53,15 +55,54 @@ function Vehicles({ browseMode = false, featured = false }) {
 
   const search = browseMode ? (searchParams.get("q") ?? "") : homepageSearch;
 
+  // FILTER STATES
   const [activeCategory, setActiveCategory] = useState("Sedan");
   const [activeBrand, setActiveBrand] = useState("Lexus");
-  const [showAll, setShowAll] = useState(browseMode);
+  const [showAll, setShowAll] = useState(true);
 
-  // Sorting for the dedicated Browse Vehicles page.
+  // SORTING STATE
   const [sortBy, setSortBy] = useState("default");
 
   const navigate = useNavigate();
 
+  // BACKEND VEHICLE INVENTORY STATES
+  const [vehicles, setVehicles] = useState([]);
+  const [inventoryLoading, setInventoryLoading] = useState(true);
+  const [inventoryError, setInventoryError] = useState("");
+
+  // FETCH VEHICLES FROM THE BACKEND
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadVehicles() {
+      try {
+        const result = await getPublicVehicles({
+          page: 1,
+          limit: 50,
+        });
+
+        if (!cancelled) {
+          setVehicles(result.vehicles);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setInventoryError(error.message || "Unable to load vehicles.");
+        }
+      } finally {
+        if (!cancelled) {
+          setInventoryLoading(false);
+        }
+      }
+    }
+
+    loadVehicles();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // BOOK VEHICLE
   function handleBook(vehicle) {
     navigate(`/vehicles/${vehicle.id}/book`);
   }
@@ -70,11 +111,11 @@ function Vehicles({ browseMode = false, featured = false }) {
   const filteredVehicles = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    return mockVehicles.filter((vehicle) => {
+    return vehicles.filter((vehicle) => {
       const category = getCategory(vehicle);
       const brand = getBrand(vehicle);
 
-      // Global search takes priority.
+      // GLOBAL SEARCH TAKES PRIORITY
       if (query) {
         const searchableText = [
           vehicle.name,
@@ -92,41 +133,40 @@ function Vehicles({ browseMode = false, featured = false }) {
         return searchableText.includes(query);
       }
 
-      // View all displays the entire mock inventory.
+      // DEFAULT: DISPLAY ALL AVAILABLE VEHICLES
       if (showAll) {
         return true;
       }
 
-      const matchesCategory = category === activeCategory;
+      const matchesCategory = !activeCategory || category === activeCategory;
 
       const matchesBrand =
         !activeBrand || brand.toLowerCase() === activeBrand.toLowerCase();
 
       return matchesCategory && matchesBrand;
     });
-  }, [search, activeCategory, activeBrand, showAll]);
+  }, [vehicles, search, activeCategory, activeBrand, showAll]);
 
   // SORT FILTERED VEHICLES
   const sortedVehicles = useMemo(() => {
-    const vehicles = [...filteredVehicles];
+    const sorted = [...filteredVehicles];
 
     switch (sortBy) {
       case "price-asc":
-        return vehicles.sort((a, b) => a.pricePerDay - b.pricePerDay);
+        return sorted.sort((a, b) => a.pricePerDay - b.pricePerDay);
 
       case "price-desc":
-        return vehicles.sort((a, b) => b.pricePerDay - a.pricePerDay);
+        return sorted.sort((a, b) => b.pricePerDay - a.pricePerDay);
 
       case "year-desc":
-        return vehicles.sort((a, b) => b.year - a.year);
+        return sorted.sort((a, b) => b.year - a.year);
 
       default:
-        return vehicles;
+        return sorted;
     }
   }, [filteredVehicles, sortBy]);
 
-  // Limit the homepage to six featured vehicles.
-  // The Browse Vehicles page continues showing all results.
+  // LIMIT HOMEPAGE TO SIX FEATURED VEHICLES
   const displayedVehicles =
     featured && !browseMode ? sortedVehicles.slice(0, 6) : sortedVehicles;
 
@@ -156,10 +196,9 @@ function Vehicles({ browseMode = false, featured = false }) {
     handleSearch("");
     setShowAll(false);
 
-    // Select a manufacturer with vehicles in this category.
-    // If none has demo vehicles, leave brand unrestricted.
+    // Select a manufacturer that has vehicles in this category.
     const firstMatchingBrand = manufacturers.find((manufacturer) =>
-      mockVehicles.some(
+      vehicles.some(
         (vehicle) =>
           getCategory(vehicle) === category &&
           getBrand(vehicle).toLowerCase() === manufacturer.name.toLowerCase(),
@@ -172,6 +211,7 @@ function Vehicles({ browseMode = false, featured = false }) {
   // MANUFACTURER FILTER
   function handleBrand(brand) {
     setActiveBrand(brand);
+    setActiveCategory(null);
     handleSearch("");
     setShowAll(false);
   }
@@ -181,49 +221,8 @@ function Vehicles({ browseMode = false, featured = false }) {
     handleSearch("");
     setActiveCategory("Sedan");
     setActiveBrand("Lexus");
-    setShowAll(browseMode);
+    setShowAll(true);
     setSortBy("default");
-  }
-
-  {
-    /* VIEW ALL — HOMEPAGE ONLY */
-  }
-  {
-    !browseMode && (
-      <div className="mt-8 flex w-full justify-end">
-        <Link
-          to="/vehicles"
-          className="
-        flex
-        h-[58px]
-        items-center
-        gap-[18px]
-        text-[#3D3D3D]
-        transition-colors
-        hover:text-[#F87927]
-      "
-        >
-          <span className="text-lg font-medium 2xl:text-2xl">View all</span>
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="11"
-            height="22"
-            viewBox="0 0 11 22"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M1 1L10 11L1 21"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </Link>
-      </div>
-    );
   }
 
   const isGlobalView = showAll || search.trim() !== "";
@@ -295,17 +294,17 @@ function Vehicles({ browseMode = false, featured = false }) {
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             className="
-    w-full
-    min-w-0
-    bg-transparent
-    text-[14px]
-    text-[#3D3D3D]
-    outline-none
-    placeholder:text-[14px]
-    placeholder:text-[#3D3D3D]/60
-    sm:text-[16px]
-    sm:placeholder:text-[16px]
-  "
+              w-full
+              min-w-0
+              bg-transparent
+              text-[14px]
+              text-[#3D3D3D]
+              outline-none
+              placeholder:text-[14px]
+              placeholder:text-[#3D3D3D]/60
+              sm:text-[16px]
+              sm:placeholder:text-[16px]
+            "
           />
 
           {/* CLEAR SEARCH BUTTON */}
@@ -330,35 +329,35 @@ function Vehicles({ browseMode = false, featured = false }) {
         {/* VEHICLE CATEGORY TABS */}
         <div
           className="
-    mt-10
-    w-full
-    min-w-0
-    overflow-x-auto
-    pb-3
-    lg:mt-12
-  "
+            mt-10
+            w-full
+            min-w-0
+            overflow-x-auto
+            pb-3
+            lg:mt-12
+          "
           role="group"
           aria-label="Vehicle categories"
         >
           <div
             className="
-    mx-auto
-    flex
-    w-max
-    items-center
-    gap-3
-    px-1
-    snap-x
-    snap-proximity
+              mx-auto
+              flex
+              w-max
+              items-center
+              gap-3
+              px-1
+              snap-x
+              snap-proximity
 
-    lg:grid
-    lg:w-full
-    lg:max-w-[1524px]
-    lg:grid-cols-6
-    lg:justify-items-center
-    lg:gap-4
-    lg:px-0
-  "
+              lg:grid
+              lg:w-full
+              lg:max-w-[1524px]
+              lg:grid-cols-6
+              lg:justify-items-center
+              lg:gap-4
+              lg:px-0
+            "
           >
             {categories.map((category) => {
               const isActive = !isGlobalView && activeCategory === category;
@@ -370,34 +369,34 @@ function Vehicles({ browseMode = false, featured = false }) {
                   aria-pressed={isActive}
                   onClick={() => handleCategory(category)}
                   className={`
-            flex
-            h-[44px]
-            shrink-0
-            snap-start
-            items-center
-            justify-center
-            whitespace-nowrap
-            rounded-full
-            px-5
-            text-sm
-            transition-colors
-            duration-200
+                    flex
+                    h-[44px]
+                    shrink-0
+                    snap-start
+                    items-center
+                    justify-center
+                    whitespace-nowrap
+                    rounded-full
+                    px-5
+                    text-sm
+                    transition-colors
+                    duration-200
 
-            sm:h-[48px]
-            sm:text-base
+                    sm:h-[48px]
+                    sm:text-base
 
-            lg:h-[50px]
-            lg:rounded-[13px]
-            lg:px-4
+                    lg:h-[50px]
+                    lg:rounded-[13px]
+                    lg:px-4
 
-            2xl:text-[20px]
+                    2xl:text-[20px]
 
-            ${
-              isActive
-                ? "bg-[rgba(248,121,39,0.17)] font-bold text-[#F87927]"
-                : "bg-[#F5F5F5] font-medium text-[#626262] hover:bg-gray-200"
-            }
-          `}
+                    ${
+                      isActive
+                        ? "bg-[rgba(248,121,39,0.17)] font-bold text-[#F87927]"
+                        : "bg-[#F5F5F5] font-medium text-[#626262] hover:bg-gray-200"
+                    }
+                  `}
                 >
                   {category}
                 </button>
@@ -544,11 +543,8 @@ function Vehicles({ browseMode = false, featured = false }) {
                 "
               >
                 <option value="default">Default</option>
-
                 <option value="price-asc">Price: Low to High</option>
-
                 <option value="price-desc">Price: High to Low</option>
-
                 <option value="year-desc">Newest Model Year</option>
               </select>
             </div>
@@ -556,7 +552,15 @@ function Vehicles({ browseMode = false, featured = false }) {
         )}
 
         {/* VEHICLE RESULTS */}
-        {displayedVehicles.length > 0 ? (
+        {inventoryLoading ? (
+          <p role="status" className="mt-12 text-[#233D4D]">
+            Loading vehicles...
+          </p>
+        ) : inventoryError ? (
+          <p role="alert" className="mt-12 text-red-600">
+            {inventoryError}
+          </p>
+        ) : displayedVehicles.length > 0 ? (
           <div
             className={`
               grid
@@ -586,7 +590,7 @@ function Vehicles({ browseMode = false, featured = false }) {
             </h3>
 
             <p className="max-w-md text-sm text-[#3D3D3D]/70">
-              No demonstration vehicles match your current selection.
+              No available vehicles match your current selection.
             </p>
 
             <button
@@ -602,7 +606,7 @@ function Vehicles({ browseMode = false, featured = false }) {
                 hover:opacity-90
               "
             >
-              {browseMode ? "Clear Filters" : "Back to Sedan"}
+              Clear Filters
             </button>
           </div>
         )}
@@ -645,10 +649,10 @@ function Vehicles({ browseMode = false, featured = false }) {
           </div>
         )}
 
-        {/* MOCK INVENTORY NOTICE */}
+        {/* INVENTORY NOTICE */}
         <p className="mt-4 text-center text-xs text-[#3D3D3D]/60">
-          Demonstration vehicles and prices. Actual inventory and rates are
-          subject to confirmation.
+          Vehicle listings and rates are retrieved from our inventory.
+          Availability for selected rental dates requires confirmation.
         </p>
       </div>
     </section>
