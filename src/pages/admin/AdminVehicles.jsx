@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { CarFront, RefreshCw, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { apiRequest } from "../../services/api";
 
@@ -20,8 +21,10 @@ function formatMoney(value) {
 }
 
 function formatStatus(status) {
-  return operationalStatuses.find((item) => item.value === status)?.label ??
-    "Unknown";
+  return (
+    operationalStatuses.find((item) => item.value === status)?.label ??
+    "Unknown"
+  );
 }
 
 function AdminVehicles() {
@@ -98,15 +101,14 @@ function AdminVehicles() {
       (listingFilter === "active" && vehicle.isActive) ||
       (listingFilter === "inactive" && !vehicle.isActive);
     const matchesStatus =
-      statusFilter === "all" ||
-      vehicle.operationalStatus === statusFilter;
+      statusFilter === "all" || vehicle.operationalStatus === statusFilter;
 
     return matchesSearch && matchesListing && matchesStatus;
   });
 
   const activeCount = vehicles.filter((vehicle) => vehicle.isActive).length;
   const availableCount = vehicles.filter(
-    (vehicle) => vehicle.isActive && vehicle.operationalStatus === "available"
+    (vehicle) => vehicle.isActive && vehicle.operationalStatus === "available",
   ).length;
   const demoCount = vehicles.filter((vehicle) => vehicle.isDemo).length;
 
@@ -126,7 +128,7 @@ function AdminVehicles() {
     if (
       !window.confirm(
         `${nextActive ? "Activate" : "Deactivate"} ${vehicle.brand} ${vehicle.model}? ` +
-          "This will change its visibility in the public catalogue."
+          "This will change its visibility in the public catalogue.",
       )
     ) {
       return;
@@ -139,7 +141,7 @@ function AdminVehicles() {
     try {
       const result = await apiRequest(
         `/api/vehicles/${vehicle._id}/${action}`,
-        { method: "PATCH", authenticated: true }
+        { method: "PATCH", authenticated: true },
       );
 
       if (result?.success !== true) {
@@ -168,7 +170,7 @@ function AdminVehicles() {
       !window.confirm(
         `Change ${vehicle.brand} ${vehicle.model} from ` +
           `${formatStatus(vehicle.operationalStatus)} to ${formatStatus(nextStatus)}? ` +
-          "This can affect vehicle availability."
+          "This can affect vehicle availability.",
       )
     ) {
       return;
@@ -179,14 +181,11 @@ function AdminVehicles() {
     setNotice("");
 
     try {
-      const result = await apiRequest(
-        `/api/vehicles/${vehicle._id}/status`,
-        {
-          method: "PATCH",
-          authenticated: true,
-          body: { operationalStatus: nextStatus },
-        }
-      );
+      const result = await apiRequest(`/api/vehicles/${vehicle._id}/status`, {
+        method: "PATCH",
+        authenticated: true,
+        body: { operationalStatus: nextStatus },
+      });
 
       if (result?.success !== true) {
         throw new Error("Operational status update was not confirmed.");
@@ -215,15 +214,24 @@ function AdminVehicles() {
             Manage vehicle visibility and operational availability.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={refresh}
-          disabled={loading || Boolean(pendingId)}
-          className="inline-flex items-center gap-2 rounded-xl border border-[#EAECF0] bg-white px-4 py-3 text-sm font-semibold text-[#233D4D] hover:bg-[#EAECF0] disabled:opacity-50"
-        >
-          <RefreshCw size={17} />
-          Refresh
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={refresh}
+            disabled={loading || Boolean(pendingId)}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#EAECF0] bg-white px-4 py-3 text-sm font-semibold text-[#233D4D] hover:bg-[#EAECF0] disabled:opacity-50"
+          >
+            <RefreshCw size={17} />
+            Refresh
+          </button>
+
+          <Link
+            to="/admin/vehicles/new"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#F87927] px-5 py-3 text-sm font-semibold text-white hover:bg-[#E96D1B]"
+          >
+            + Add Vehicle
+          </Link>
+        </div>
       </div>
 
       <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -233,7 +241,10 @@ function AdminVehicles() {
           { label: "Available listings", value: availableCount },
           { label: "Demo vehicles", value: demoCount },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-2xl border border-[#EAECF0] bg-white p-5">
+          <div
+            key={stat.label}
+            className="rounded-2xl border border-[#EAECF0] bg-white p-5"
+          >
             <p className="text-sm text-[#3D3D3D]/70">{stat.label}</p>
             <p className="mt-2 text-3xl font-bold text-[#233D4D]">
               {loading ? "…" : stat.value}
@@ -243,13 +254,19 @@ function AdminVehicles() {
       </div>
 
       {notice && (
-        <p role="status" className="mt-5 rounded-xl bg-green-50 p-4 text-sm text-green-800">
+        <p
+          role="status"
+          className="mt-5 rounded-xl bg-green-50 p-4 text-sm text-green-800"
+        >
           {notice}
         </p>
       )}
 
       {actionError && (
-        <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700">
+        <p
+          role="alert"
+          className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700"
+        >
           {actionError}
         </p>
       )}
@@ -261,7 +278,10 @@ function AdminVehicles() {
               Search vehicles
             </span>
             <span className="relative block">
-              <Search size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#3D3D3D]/50" />
+              <Search
+                size={19}
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#3D3D3D]/50"
+              />
               <input
                 type="search"
                 value={search}
@@ -305,7 +325,10 @@ function AdminVehicles() {
         </div>
 
         {snapshot.error && !loading && (
-          <div role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700">
+          <div
+            role="alert"
+            className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700"
+          >
             {snapshot.error}
           </div>
         )}
@@ -320,95 +343,130 @@ function AdminVehicles() {
           <table className="w-full min-w-[850px] border-collapse text-left">
             <thead>
               <tr className="border-b border-[#EAECF0] text-xs uppercase tracking-wide text-[#3D3D3D]/60">
-                <th scope="col" className="px-3 py-4">Vehicle</th>
-                <th scope="col" className="px-3 py-4">Daily rate</th>
-                <th scope="col" className="px-3 py-4">Listing</th>
-                <th scope="col" className="px-3 py-4">Operational status</th>
-                <th scope="col" className="px-3 py-4">Actions</th>
+                <th scope="col" className="px-3 py-4">
+                  Vehicle
+                </th>
+                <th scope="col" className="px-3 py-4">
+                  Daily rate
+                </th>
+                <th scope="col" className="px-3 py-4">
+                  Listing
+                </th>
+                <th scope="col" className="px-3 py-4">
+                  Operational status
+                </th>
+                <th scope="col" className="px-3 py-4">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
-              {!loading && !snapshot.error && matchingVehicles.map((vehicle) => (
-                <tr key={vehicle._id} className="border-b border-[#EAECF0] align-middle last:border-0">
-                  <td className="px-3 py-4">
-                    <div className="flex min-w-[220px] items-center gap-3">
-                      <div className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#EAECF0]">
-                        {vehicle.images?.[0] ? (
-                          <img
-                            src={vehicle.images[0]}
-                            alt={`${vehicle.brand ?? ""} ${vehicle.model ?? ""}`}
-                            loading="lazy"
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <CarFront className="text-[#233D4D]/40" size={28} />
-                        )}
+              {!loading &&
+                !snapshot.error &&
+                matchingVehicles.map((vehicle) => (
+                  <tr
+                    key={vehicle._id}
+                    className="border-b border-[#EAECF0] align-middle last:border-0"
+                  >
+                    <td className="px-3 py-4">
+                      <div className="flex min-w-[220px] items-center gap-3">
+                        <div className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#EAECF0]">
+                          {vehicle.images?.[0] ? (
+                            <img
+                              src={vehicle.images[0]}
+                              alt={`${vehicle.brand ?? ""} ${vehicle.model ?? ""}`}
+                              loading="lazy"
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <CarFront className="text-[#233D4D]/40" size={28} />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-[#233D4D]">
+                            {vehicle.brand} {vehicle.model}
+                          </p>
+                          <p className="mt-1 text-xs text-[#3D3D3D]/65">
+                            {vehicle.year} ·{" "}
+                            {vehicle.category ?? "Uncategorized"}
+                          </p>
+                          {vehicle.isDemo && (
+                            <span className="mt-1 inline-block rounded-full bg-[#C2E8FF]/60 px-2 py-1 text-xs font-semibold text-[#233D4D]">
+                              Demo inventory
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-[#233D4D]">
-                          {vehicle.brand} {vehicle.model}
-                        </p>
-                        <p className="mt-1 text-xs text-[#3D3D3D]/65">
-                          {vehicle.year} · {vehicle.category ?? "Uncategorized"}
-                        </p>
-                        {vehicle.isDemo && (
-                          <span className="mt-1 inline-block rounded-full bg-[#C2E8FF]/60 px-2 py-1 text-xs font-semibold text-[#233D4D]">
-                            Demo inventory
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-4 text-sm font-semibold text-[#233D4D]">
-                    {formatMoney(vehicle.pricing?.daily)}
-                  </td>
-                  <td className="px-3 py-4">
-                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                      vehicle.isActive
-                        ? "bg-green-50 text-green-800"
-                        : "bg-[#EAECF0] text-[#233D4D]"
-                    }`}>
-                      {vehicle.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="px-3 py-4">
-                    <select
-                      aria-label={`Operational status for ${vehicle.brand} ${vehicle.model}`}
-                      value={vehicle.operationalStatus ?? "available"}
-                      onChange={(event) =>
-                        changeOperationalStatus(vehicle, event.target.value)
-                      }
-                      disabled={Boolean(pendingId)}
-                      className="min-h-10 rounded-xl border border-[#EAECF0] bg-white px-3 text-sm text-[#233D4D] disabled:opacity-50"
-                    >
-                      {operationalStatuses.map((status) => (
-                        <option key={status.value} value={status.value}>
-                          {status.label}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="px-3 py-4">
-                    <button
-                      type="button"
-                      onClick={() => changeListing(vehicle)}
-                      disabled={Boolean(pendingId)}
-                      className="min-h-10 rounded-xl border border-[#233D4D]/20 px-4 text-sm font-semibold text-[#233D4D] hover:bg-[#EAECF0] disabled:opacity-50"
-                    >
-                      {pendingId === vehicle._id
-                        ? "Saving…"
-                        : vehicle.isActive
-                          ? "Deactivate"
-                          : "Activate"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-3 py-4 text-sm font-semibold text-[#233D4D]">
+                      {formatMoney(vehicle.pricing?.daily)}
+                    </td>
+                    <td className="px-3 py-4">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                          vehicle.isActive
+                            ? "bg-green-50 text-green-800"
+                            : "bg-[#EAECF0] text-[#233D4D]"
+                        }`}
+                      >
+                        {vehicle.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-4">
+                      <select
+                        aria-label={`Operational status for ${vehicle.brand} ${vehicle.model}`}
+                        value={vehicle.operationalStatus ?? "available"}
+                        onChange={(event) =>
+                          changeOperationalStatus(vehicle, event.target.value)
+                        }
+                        disabled={Boolean(pendingId)}
+                        className="min-h-10 rounded-xl border border-[#EAECF0] bg-white px-3 text-sm text-[#233D4D] disabled:opacity-50"
+                      >
+                        {operationalStatuses.map((status) => (
+                          <option key={status.value} value={status.value}>
+                            {status.label}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-3 py-4">
+                      <Link
+                        to={`/admin/vehicles/${vehicle._id}/edit`}
+                        className="mr-2 inline-flex min-h-10 items-center rounded-xl border border-[#EAECF0] px-4 text-sm font-semibold text-[#233D4D] hover:bg-[#EAECF0]"
+                      >
+                        Edit
+                      </Link>
+
+                      <Link
+                        to={`/admin/vehicles/${vehicle._id}/manage`}
+                        className="mr-2 inline-flex min-h-10 items-center rounded-xl border border-[#EAECF0] px-4 text-sm font-semibold text-[#233D4D] hover:bg-[#EAECF0]"
+                      >
+                        Manage
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => changeListing(vehicle)}
+                        disabled={Boolean(pendingId)}
+                        className="min-h-10 rounded-xl border border-[#233D4D]/20 px-4 text-sm font-semibold text-[#233D4D] hover:bg-[#EAECF0] disabled:opacity-50"
+                      >
+                        {pendingId === vehicle._id
+                          ? "Saving…"
+                          : vehicle.isActive
+                            ? "Deactivate"
+                            : "Activate"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
 
           {loading && (
-            <p role="status" className="py-10 text-center text-sm text-[#3D3D3D]/70">
+            <p
+              role="status"
+              className="py-10 text-center text-sm text-[#3D3D3D]/70"
+            >
               Loading vehicle inventory...
             </p>
           )}
@@ -421,10 +479,10 @@ function AdminVehicles() {
       </div>
 
       <p className="mt-5 text-sm leading-6 text-[#3D3D3D]/65">
-        Changes to listing visibility and operational status affect the public
-        vehicle catalogue. They do not cancel existing bookings. Vehicle
-        creation, editing, images and scheduled blocks will be added in the next
-        fleet management stages.
+        Manage your fleet by adding vehicles, updating their specifications and
+        rental prices, or changing their listing and operational status. Vehicle
+        image management and scheduled availability restrictions will be
+        integrated in the next phase.
       </p>
     </section>
   );

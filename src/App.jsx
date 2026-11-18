@@ -12,6 +12,8 @@ import AdminOverview from "./pages/admin/AdminOverview";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
 import AdminBookings from "./pages/admin/AdminBookings";
 import AdminVehicles from "./pages/admin/AdminVehicles";
+import AdminVehicleForm from "./pages/admin/AdminVehicleForm";
+import AdminVehicleOperations from "./pages/admin/AdminVehicleOperations";
 
 import Home from "./pages/Home";
 import VehicleDetails from "./pages/VehicleDetails";
@@ -75,6 +77,15 @@ function App() {
             <Route path="bookings" element={<AdminBookings />} />
 
             <Route path="vehicles" element={<AdminVehicles />} />
+
+            <Route path="vehicles/new" element={<AdminVehicleForm />} />
+
+            <Route path="vehicles/:id/edit" element={<AdminVehicleForm />} />
+
+            <Route
+              path="vehicles/:id/manage"
+              element={<AdminVehicleOperations />}
+            />
           </Route>
         </Route>
       </Routes>

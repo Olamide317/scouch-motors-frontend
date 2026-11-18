@@ -1,6 +1,5 @@
 const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:3000"
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"
 ).replace(/\/+$/, "");
 
 const TOKEN_KEY = "scouch_access_token";
@@ -30,17 +29,12 @@ export function subscribeToAuthChanges(callback) {
   window.addEventListener(AUTH_CHANGED_EVENT, callback);
 
   return () => {
-    window.removeEventListener(
-      AUTH_CHANGED_EVENT,
-      callback
-    );
+    window.removeEventListener(AUTH_CHANGED_EVENT, callback);
   };
 }
 
 function notifyAuthChanged() {
-  window.dispatchEvent(
-    new Event(AUTH_CHANGED_EVENT)
-  );
+  window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
 }
 
 // Retain compatibility with existing code that
@@ -77,10 +71,7 @@ export function saveAuthSession(token, user) {
   };
 
   sessionStorage.setItem(TOKEN_KEY, token);
-  sessionStorage.setItem(
-    USER_KEY,
-    JSON.stringify(safeUser)
-  );
+  sessionStorage.setItem(USER_KEY, JSON.stringify(safeUser));
 
   notifyAuthChanged();
 }
@@ -125,11 +116,7 @@ export function clearAccessToken() {
 // Central API request handler.
 export async function apiRequest(
   path,
-  {
-    method = "GET",
-    body,
-    authenticated = false,
-  } = {}
+  { method = "GET", body, authenticated = false } = {},
 ) {
   const headers = {};
   let requestToken = null;
@@ -154,9 +141,7 @@ export async function apiRequest(
     response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers,
-      ...(body !== undefined
-        ? { body: JSON.stringify(body) }
-        : {}),
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
   } catch {
     throw new Error("Unable to connect to the backend.");
@@ -174,9 +159,46 @@ export async function apiRequest(
       clearAccessToken();
     }
 
+    throw new Error(data?.message || `Request failed (${response.status})`);
+  }
+
+  return data;
+}
+
+export async function uploadMultipart(path, formData) {
+  if (!(formData instanceof FormData)) {
+    throw new Error("A valid upload form is required.");
+  }
+
+  const token = getAccessToken();
+
+  if (!token) {
+    throw new Error("Please sign in to continue.");
+  }
+
+  let response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+  } catch {
+    throw new Error("Unable to connect to the backend.");
+  }
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok || data?.success === false) {
+    if (response.status === 401 && getAccessToken() === token) {
+      clearAccessToken();
+    }
+
     throw new Error(
-      data?.message ||
-      `Request failed (${response.status})`
+      data?.message || `Image upload failed (${response.status})`,
     );
   }
 
