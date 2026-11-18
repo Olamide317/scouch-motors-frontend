@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-import { apiRequest, clearAccessToken } from "../services/api";
+import { apiRequest } from "../services/api";
 
 function MyBookings() {
-  const navigate = useNavigate();
-
   const [startingPaymentId, setStartingPaymentId] = useState(null);
   const [paymentError, setPaymentError] = useState({});
   const [bookings, setBookings] = useState([]);
@@ -69,12 +67,6 @@ function MyBookings() {
       active = false;
     };
   }, []);
-
-  // Sign out the current customer.
-  function logout() {
-    clearAccessToken();
-    navigate("/login", { replace: true });
-  }
 
   // Initialize Paystack Test Mode checkout.
   async function handlePaystackCheckout(bookingId) {
@@ -141,14 +133,6 @@ function MyBookings() {
               View and manage your rental requests.
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={logout}
-            className="rounded-xl border border-[#233D4D] px-5 py-3 font-semibold text-[#233D4D]"
-          >
-            Sign Out
-          </button>
         </div>
 
         {/* LOADING STATE */}

@@ -26,9 +26,7 @@ export function normalizeVehicle(vehicle) {
 
   const images = Array.isArray(vehicle.images)
     ? vehicle.images.filter(
-        (image) =>
-          typeof image === "string" &&
-          /^https:\/\//i.test(image)
+        (image) => typeof image === "string" && /^https:\/\//i.test(image),
       )
     : [];
 
@@ -41,13 +39,14 @@ export function normalizeVehicle(vehicle) {
     model: vehicle.model,
     year: vehicle.year,
 
-    category:
-      categoryLabels[vehicle.category] ??
-      vehicle.category,
+    category: categoryLabels[vehicle.category] ?? vehicle.category,
 
     transmission: vehicle.transmission,
     fuelType: vehicle.fuelType,
     seats: vehicle.seats,
+
+    climateControl: vehicle.climateControl ?? null,
+    mileageKm: vehicle.mileageKm ?? null,
 
     description: vehicle.description ?? "",
 
@@ -58,12 +57,11 @@ export function normalizeVehicle(vehicle) {
     pricePerDay: vehicle.pricing?.daily ?? null,
 
     available:
-      vehicle.isActive === true &&
-      vehicle.operationalStatus === "available",
+      vehicle.isActive === true && vehicle.operationalStatus === "available",
 
     status: vehicle.operationalStatus,
 
-    isDemo: false,
+    isDemo: vehicle.isDemo === true,
   };
 }
 
@@ -79,9 +77,7 @@ export async function getPublicVehicles({
     sort: sortOptions[sort] ?? "newest",
   });
 
-  const result = await apiRequest(
-    `/api/vehicles?${params.toString()}`
-  );
+  const result = await apiRequest(`/api/vehicles?${params.toString()}`);
 
   if (!Array.isArray(result.vehicles)) {
     throw new Error("Invalid vehicle inventory response.");
@@ -95,16 +91,11 @@ export async function getPublicVehicles({
 
 // Retrieve one publicly available vehicle by MongoDB ID.
 export async function getPublicVehicleById(id) {
-  if (
-    typeof id !== "string" ||
-    !/^[a-fA-F0-9]{24}$/.test(id)
-  ) {
+  if (typeof id !== "string" || !/^[a-fA-F0-9]{24}$/.test(id)) {
     throw new Error("Invalid vehicle ID.");
   }
 
-  const result = await apiRequest(
-    `/api/vehicles/${encodeURIComponent(id)}`
-  );
+  const result = await apiRequest(`/api/vehicles/${encodeURIComponent(id)}`);
 
   if (!result.vehicle) {
     throw new Error("Vehicle not found.");

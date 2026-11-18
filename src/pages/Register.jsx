@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
+import { apiRequest, saveAuthSession } from "../services/api";
 
 const initialForm = {
   firstName: "",
@@ -14,7 +16,9 @@ function Register() {
   const [form, setForm] = useState(initialForm);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [previewMessage, setPreviewMessage] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -24,12 +28,80 @@ function Register() {
       [name]: value,
     }));
 
-    setPreviewMessage(false);
+    setError("");
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    setPreviewMessage(true);
+
+    if (loading) return;
+
+    setError("");
+
+    const firstName = form.firstName.trim();
+    const lastName = form.lastName.trim();
+    const email = form.email.trim().toLowerCase();
+    const phone = form.phone.trim();
+
+    if (!firstName || !lastName || !email || !phone || !form.password) {
+      setError("Please complete all required fields.");
+      return;
+    }
+
+    if (firstName.length > 20 || lastName.length > 20) {
+      setError("First and last names must not exceed 20 characters.");
+      return;
+    }
+
+    if (form.password.length < 4) {
+      setError("Password must contain at least 4 characters.");
+      return;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const result = await apiRequest("/api/auth/register", {
+        method: "POST",
+        body: {
+          firstName,
+          lastName,
+          email,
+          phone,
+          password: form.password,
+        },
+      });
+
+      if (result?.success !== true || !result?.token || !result?.user) {
+        throw new Error("Unexpected registration response.");
+      }
+
+      // Automatically sign in the newly created customer.
+      saveAuthSession(result.token, result.user);
+
+      // Preserve an interrupted rental booking.
+      const hasBookingDraft =
+        bookingDraft && /^[a-fA-F0-9]{24}$/.test(bookingDraft.vehicleId);
+
+      const destination = hasBookingDraft
+        ? `/vehicles/${bookingDraft.vehicleId}/book`
+        : "/";
+
+      // Redirect without requiring another login.
+      navigate(destination, {
+        replace: true,
+        state: hasBookingDraft ? { bookingDraft } : undefined,
+      });
+    } catch (err) {
+      setError(err.message || "Unable to create account.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const inputClass =
@@ -238,14 +310,13 @@ function Register() {
               <p className="text-sm text-red-600">Passwords do not match.</p>
             )}
 
-            {/* PREVIEW NOTICE */}
-            {previewMessage && (
+            {/* REGISTRATION ERROR */}
+            {error && (
               <p
-                role="status"
-                className="rounded-xl bg-[#C2E8FF]/35 p-4 text-sm leading-6 text-[#233D4D]"
+                role="alert"
+                className="rounded-xl bg-red-50 p-4 text-sm text-red-700"
               >
-                This is a frontend preview. Account registration will be enabled
-                when the backend is connected. No account has been created.
+                {error}
               </p>
             )}
 
@@ -253,17 +324,28 @@ function Register() {
             <button
               type="submit"
               disabled={
-                Boolean(form.confirmPassword) &&
-                form.password !== form.confirmPassword
+                loading ||
+                (Boolean(form.confirmPassword) &&
+                  form.password !== form.confirmPassword)
               }
-              className="flex min-h-[54px] w-full items-center justify-center rounded-xl bg-[#233D4D] px-6 font-semibold text-white transition-colors hover:bg-[#34596F] disabled:cursor-not-allowed disabled:opacity-50"
+              className="
+    flex min-h-[54px] w-full items-center justify-center
+    rounded-xl bg-[#233D4D] px-6
+    font-semibold text-white
+    transition-colors hover:bg-[#34596F]
+    disabled:cursor-not-allowed disabled:opacity-50
+  "
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
 
             <p className="text-center text-sm text-[#3D3D3D]/65 lg:hidden">
               Already have an account?{" "}
-              <Link to="/login" state={accountState} className="font-semibold text-[#F87927]">
+              <Link
+                to="/login"
+                state={accountState}
+                className="font-semibold text-[#F87927]"
+              >
                 Sign In
               </Link>
             </p>

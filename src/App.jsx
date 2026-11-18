@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import WhatsAppButton from "./components/WhatsAppButton";
 import ScrollToTop from "./components/ScrollToTop";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./pages/Home";
 import VehicleDetails from "./pages/VehicleDetails";
@@ -44,6 +45,8 @@ function App() {
           <Route path="/my-bookings" element={<MyBookings />} />
 
           <Route path="/payments/test/result" element={<PaymentResult />} />
+
+          <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>}/>
         </Routes>
 
         <Footer />

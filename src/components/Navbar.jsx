@@ -1,5 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
+
+import {
+  apiRequest,
+  clearAccessToken,
+  getAccessToken,
+  getStoredUserSnapshot,
+  isSignedIn,
+  saveAuthUser,
+  subscribeToAuthChanges,
+} from "../services/api";
+
 import businessSettings, { getPhoneUrl } from "../config/businessSettings";
 
 import phoneIcon from "../assets/icons/phone.svg";
@@ -15,11 +27,44 @@ const navLinks = [
   { name: "Contact", href: "/#contact" },
 ];
 
+function getUserInitials(userSnapshot) {
+  if (!userSnapshot) return "";
+
+  try {
+    const user = JSON.parse(userSnapshot);
+
+    const firstName =
+      typeof user.firstName === "string" ? user.firstName.trim() : "";
+
+    const lastName =
+      typeof user.lastName === "string" ? user.lastName.trim() : "";
+
+    const firstInitial = Array.from(firstName)[0] ?? "";
+    const lastInitial = Array.from(lastName)[0] ?? "";
+
+    return (firstInitial + lastInitial).toLocaleUpperCase();
+  } catch {
+    return "";
+  }
+}
+
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
   const accountMenuRef = useRef(null);
+
+  const isAuthenticated = useSyncExternalStore(
+    subscribeToAuthChanges,
+    isSignedIn,
+  );
+
+  const userSnapshot = useSyncExternalStore(
+    subscribeToAuthChanges,
+    getStoredUserSnapshot,
+  );
+
+  const initials = getUserInitials(userSnapshot);
 
   useEffect(() => {
     if (!accountOpen) return;
@@ -47,6 +92,37 @@ function Navbar() {
       document.removeEventListener("keydown", handleEscape);
     };
   }, [accountOpen]);
+
+  useEffect(() => {
+    const tokenAtStart = getAccessToken();
+
+    if (!tokenAtStart) return;
+
+    let active = true;
+
+    async function refreshProfile() {
+      try {
+        const result = await apiRequest("/api/auth/me", {
+          authenticated: true,
+        });
+
+        if (active && getAccessToken() === tokenAtStart && result?.user) {
+          saveAuthUser(result.user);
+        }
+      } catch {
+        // A 401 response is handled by apiRequest,
+        // which clears an invalid session.
+        // Temporary network errors are not treated
+        // as an automatic logout.
+      }
+    }
+
+    refreshProfile();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const { contact } = businessSettings;
 
@@ -83,6 +159,12 @@ function Navbar() {
   }
 
   const navigate = useNavigate();
+  function handleSignOut() {
+    clearAccessToken();
+    setAccountOpen(false);
+    setMenuOpen(false);
+    navigate("/", { replace: true });
+  }
 
   function handleNavbarSearch(event) {
     event.preventDefault();
@@ -226,7 +308,11 @@ function Navbar() {
             <button
               type="button"
               onClick={() => setAccountOpen((prev) => !prev)}
-              aria-label="Account menu"
+              aria-label={
+  isAuthenticated
+    ? "Open account menu"
+    : "Open sign-in options"
+}
               aria-expanded={accountOpen}
               aria-controls="desktop-account-menu"
               className="
@@ -239,55 +325,98 @@ function Navbar() {
                 focus-visible:outline-[#F87927]
               "
             >
-              <img
-                src={profileIcon}
-                alt=""
-                className="h-12 w-12 2xl:h-[54px] 2xl:w-[54px]"
-              />
+              {isAuthenticated ? (
+                <span
+                  aria-hidden="true"
+                  className="
+      flex h-12 w-12 shrink-0
+      items-center justify-center
+      rounded-full
+      border-2 border-white/90
+      bg-[#F87927]
+      text-lg font-bold
+      tracking-wide text-white
+      shadow-sm
+      2xl:h-[54px]
+      2xl:w-[54px]
+      2xl:text-xl
+    "
+                >
+                  {initials || "?"}
+                </span>
+              ) : (
+                <img
+                  src={profileIcon}
+                  alt=""
+                  className="h-12 w-12 2xl:h-[54px] 2xl:w-[54px]"
+                />
+              )}
             </button>
 
             {accountOpen && (
               <div
                 id="desktop-account-menu"
                 className="
-                  absolute
-                  right-0
-                  top-full
-                  z-50
-                  mt-3
-                  w-[210px]
-                  overflow-hidden
-                  rounded-xl
-                  border
-                  border-[#EAECF0]
-                  bg-white
-                  p-2
-                  shadow-[0_12px_35px_rgba(35,61,77,0.15)]
-                "
+      absolute right-0 top-full z-50 mt-3
+      w-[210px] overflow-hidden rounded-xl
+      border border-[#EAECF0] bg-white p-2
+      shadow-[0_12px_35px_rgba(35,61,77,0.15)]
+    "
               >
-                <Link
-                  to="/login"
-                  onClick={() => setAccountOpen(false)}
-                  className="
-                    block rounded-lg px-4 py-3
-                    text-sm font-semibold text-[#233D4D]
-                    transition-colors hover:bg-[#EAECF0]
-                  "
-                >
-                  Login
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      to="/my-bookings"
+                      onClick={() => setAccountOpen(false)}
+                      className="
+            block rounded-lg px-4 py-3
+            text-sm font-semibold text-[#233D4D]
+            transition-colors hover:bg-[#EAECF0]
+          "
+                    >
+                      My Bookings
+                    </Link>
 
-                <Link
-                  to="/register"
-                  onClick={() => setAccountOpen(false)}
-                  className="
-                    mt-1 block rounded-lg px-4 py-3
-                    text-sm font-semibold text-[#233D4D]
-                    transition-colors hover:bg-[#EAECF0]
-                  "
-                >
-                  Create Account
-                </Link>
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="
+            mt-1 block w-full rounded-lg
+            px-4 py-3 text-left text-sm
+            font-semibold text-[#233D4D]
+            transition-colors hover:bg-[#EAECF0]
+          "
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={() => setAccountOpen(false)}
+                      className="
+            block rounded-lg px-4 py-3
+            text-sm font-semibold text-[#233D4D]
+            transition-colors hover:bg-[#EAECF0]
+          "
+                    >
+                      Login
+                    </Link>
+
+                    <Link
+                      to="/register"
+                      onClick={() => setAccountOpen(false)}
+                      className="
+            mt-1 block rounded-lg px-4 py-3
+            text-sm font-semibold text-[#233D4D]
+            transition-colors hover:bg-[#EAECF0]
+          "
+                    >
+                      Create Account
+                    </Link>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -333,29 +462,60 @@ function Navbar() {
 
             {/* MOBILE ACCOUNT LINKS */}
             <div className="mt-3 border-t border-white/20 pt-3">
-              <Link
-                to="/login"
-                onClick={closeMenu}
-                className="
-                  block rounded-md px-3 py-3
-                  text-base font-medium text-white
-                  transition-colors hover:bg-white/10
-                "
-              >
-                Login
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/my-bookings"
+                    onClick={closeMenu}
+                    className="
+          block rounded-md px-3 py-3
+          text-base font-medium text-white
+          transition-colors hover:bg-white/10
+        "
+                  >
+                    My Bookings
+                  </Link>
 
-              <Link
-                to="/register"
-                onClick={closeMenu}
-                className="
-                  block rounded-md px-3 py-3
-                  text-base font-semibold text-[#F87927]
-                  transition-colors hover:bg-white/10
-                "
-              >
-                Create Account
-              </Link>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="
+          block w-full rounded-md px-3 py-3
+          text-left text-base font-semibold
+          text-[#F87927]
+          transition-colors hover:bg-white/10
+        "
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={closeMenu}
+                    className="
+          block rounded-md px-3 py-3
+          text-base font-medium text-white
+          transition-colors hover:bg-white/10
+        "
+                  >
+                    Login
+                  </Link>
+
+                  <Link
+                    to="/register"
+                    onClick={closeMenu}
+                    className="
+          block rounded-md px-3 py-3
+          text-base font-semibold text-[#F87927]
+          transition-colors hover:bg-white/10
+        "
+                  >
+                    Create Account
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* MOBILE CONTACT INFORMATION */}

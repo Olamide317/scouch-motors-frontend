@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { apiRequest, saveAccessToken } from "../services/api";
+import { apiRequest, saveAuthSession } from "../services/api";
 
 function Login() {
   const [form, setForm] = useState({
@@ -46,12 +46,14 @@ function Login() {
         throw new Error("Invalid login response.");
       }
 
-      saveAccessToken(result.token);
+      saveAuthSession(result.token, result.user);
 
       const destination =
         bookingDraft && /^[a-fA-F0-9]{24}$/.test(bookingDraft.vehicleId)
           ? `/vehicles/${bookingDraft.vehicleId}/book`
-          : "/my-bookings";
+          : location.state?.from === "/my-bookings"
+            ? "/my-bookings"
+            : "/";
 
       navigate(destination, {
         replace: true,
@@ -183,6 +185,23 @@ function Login() {
               Enter your account details to continue.
             </p>
           </div>
+
+          {location.state?.registrationSuccess && (
+            <div
+              role="status"
+              className="
+      mt-6 rounded-xl border border-green-200
+      bg-green-50 p-4 text-sm leading-6
+      text-green-800
+    "
+            >
+              <p className="font-semibold">Account created successfully!</p>
+
+              <p className="mt-1">
+                Your Scouch Motors account is ready. Sign in to continue.
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             {/* EMAIL */}
