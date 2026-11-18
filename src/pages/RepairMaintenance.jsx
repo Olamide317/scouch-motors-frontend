@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { apiRequest } from "../services/api";
 import carRepair from "../assets/services/car-repair.png";
 
 const serviceTypes = [
@@ -11,8 +12,7 @@ const serviceTypes = [
   },
   {
     title: "Mechanical Repairs",
-    description:
-      "Describe mechanical concerns and request an assessment.",
+    description: "Describe mechanical concerns and request an assessment.",
     icon: "02",
   },
   {
@@ -43,7 +43,9 @@ const fieldClass =
 
 function RepairMaintenance() {
   const [form, setForm] = useState(initialForm);
-  const [previewSubmitted, setPreviewSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+const [notice, setNotice] = useState("");
+const [submitError, setSubmitError] = useState("");
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -53,14 +55,55 @@ function RepairMaintenance() {
       [name]: value,
     }));
 
-    setPreviewSubmitted(false);
+    setNotice("");
+    setSubmitError("");
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    // Frontend preview only: no request is sent or stored.
-    setPreviewSubmitted(true);
+    if (submitting) return;
+
+    setNotice("");
+    setSubmitError("");
+
+    const payload = {
+      fullName: form.fullName.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      vehicle: form.vehicle.trim(),
+      serviceType: form.serviceType,
+      description: form.description.trim(),
+    };
+
+    if (Object.values(payload).some((value) => !value)) {
+      setSubmitError("Please complete all required fields.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const result = await apiRequest("/api/repair-enquiries", {
+        method: "POST",
+        body: payload,
+      });
+
+      if (result?.success !== true || !result?.enquiryId) {
+        throw new Error("Unexpected service enquiry response.");
+      }
+
+      setForm(initialForm);
+
+      setNotice(
+        "Your service enquiry was submitted successfully. " +
+          "Our team can now review your request.",
+      );
+    } catch (error) {
+      setSubmitError(error.message || "Unable to submit your service enquiry.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -80,9 +123,7 @@ function RepairMaintenance() {
                 Our Services
               </Link>
               <span>/</span>
-              <span className="text-white">
-                Repair & Maintenance
-              </span>
+              <span className="text-white">Repair & Maintenance</span>
             </nav>
 
             <p className="mt-12 text-sm font-semibold uppercase tracking-[0.18em] text-[#C2E8FF]">
@@ -94,9 +135,8 @@ function RepairMaintenance() {
             </h1>
 
             <p className="mt-6 max-w-[580px] text-base leading-8 text-white/75">
-              Keep your vehicle in good condition with
-              automotive care and maintenance support.
-              Tell us what you need, and our team can
+              Keep your vehicle in good condition with automotive care and
+              maintenance support. Tell us what you need, and our team can
               review your service enquiry.
             </p>
 
@@ -134,9 +174,9 @@ function RepairMaintenance() {
             </h2>
 
             <p className="mt-4 leading-7 text-[#3D3D3D]/70">
-              Select the type of service you're interested
-              in. The exact services available will be
-              confirmed when your enquiry is reviewed.
+              Select the type of service you're interested in. The exact
+              services available will be confirmed when your enquiry is
+              reviewed.
             </p>
           </div>
 
@@ -180,24 +220,19 @@ function RepairMaintenance() {
             </h2>
 
             <p className="mt-5 max-w-[480px] leading-8 text-[#3D3D3D]/75">
-              Fill out the enquiry form with your vehicle
-              information and a description of what you
-              need. This will help our team understand
-              your request when online enquiries become
-              available.
+              Fill out the enquiry form with your vehicle information and a
+              description of what you need. Our team can review your request and
+              advise on the next steps.
             </p>
 
             <div className="mt-8 rounded-2xl border border-[#233D4D]/10 bg-white/60 p-5">
-              <h3 className="font-semibold text-[#233D4D]">
-                How it will work
-              </h3>
+              <h3 className="font-semibold text-[#233D4D]">How it will work</h3>
 
               <p className="mt-3 text-sm leading-7 text-[#3D3D3D]/75">
-                Once the backend is connected, customers
-                will submit service enquiries for review.
-                The team will then confirm service
-                availability, next steps, and any
-                applicable quotation.
+                Submit your service enquiry for review. Our team can then
+                discuss service availability, next steps, and any applicable
+                quotation. Submitting an enquiry does not automatically confirm
+                an appointment.
               </p>
             </div>
           </div>
@@ -209,13 +244,10 @@ function RepairMaintenance() {
             </h3>
 
             <p className="mt-2 text-sm text-[#3D3D3D]/65">
-              Frontend preview — no enquiry will be sent yet.
+              Submit your service enquiry for our team to review..
             </p>
 
-            <form
-              onSubmit={handleSubmit}
-              className="mt-7 space-y-5"
-            >
+            <form onSubmit={handleSubmit} className="mt-7 space-y-5">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label
@@ -322,10 +354,7 @@ function RepairMaintenance() {
                   </option>
 
                   {serviceTypes.map((service) => (
-                    <option
-                      key={service.title}
-                      value={service.title}
-                    >
+                    <option key={service.title} value={service.title}>
                       {service.title}
                     </option>
                   ))}
@@ -354,22 +383,46 @@ function RepairMaintenance() {
                 />
               </div>
 
-              {previewSubmitted && (
+              {notice && (
                 <p
                   role="status"
-                  className="rounded-xl bg-[#C2E8FF]/40 p-4 text-sm leading-6 text-[#233D4D]"
+                  className="
+      rounded-xl bg-green-50 p-4
+      text-sm leading-6 text-green-800
+    "
                 >
-                  Your form is complete. This is a frontend
-                  preview, so the enquiry has not been
-                  submitted or saved.
+                  {notice}
+                </p>
+              )}
+
+              {submitError && (
+                <p
+                  role="alert"
+                  className="
+      rounded-xl bg-red-50 p-4
+      text-sm leading-6 text-red-700
+    "
+                >
+                  {submitError}
                 </p>
               )}
 
               <button
                 type="submit"
-                className="flex min-h-[54px] w-full items-center justify-center rounded-xl bg-[#233D4D] px-6 font-semibold text-white transition-colors hover:bg-[#34596F]"
+                disabled={submitting}
+                className="
+    flex min-h-[54px] w-full
+    items-center justify-center
+    rounded-xl bg-[#233D4D] px-6
+    font-semibold text-white
+    transition-colors hover:bg-[#34596F]
+    disabled:cursor-not-allowed
+    disabled:opacity-60
+  "
               >
-                Preview Service Enquiry
+                {submitting
+                  ? "Submitting Enquiry..."
+                  : "Submit Service Enquiry"}
               </button>
             </form>
           </div>
