@@ -51,9 +51,11 @@ function Login() {
       const destination =
         bookingDraft && /^[a-fA-F0-9]{24}$/.test(bookingDraft.vehicleId)
           ? `/vehicles/${bookingDraft.vehicleId}/book`
-          : location.state?.from === "/my-bookings"
-            ? "/my-bookings"
-            : "/";
+          : location.state?.from === "/admin" && result.user.role === "admin"
+            ? "/admin"
+            : location.state?.from === "/my-bookings"
+              ? "/my-bookings"
+              : "/";
 
       navigate(destination, {
         replace: true,

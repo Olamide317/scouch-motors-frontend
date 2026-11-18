@@ -7,7 +7,6 @@ import {
   clearAccessToken,
   getAccessToken,
   getStoredUserSnapshot,
-  isSignedIn,
   saveAuthUser,
   subscribeToAuthChanges,
 } from "../services/api";
@@ -54,10 +53,16 @@ function Navbar() {
   const [accountOpen, setAccountOpen] = useState(false);
   const accountMenuRef = useRef(null);
 
-  const isAuthenticated = useSyncExternalStore(
+  const sessionToken = useSyncExternalStore(
     subscribeToAuthChanges,
-    isSignedIn,
+    getAccessToken,
   );
+
+  const isAuthenticated = Boolean(sessionToken);
+
+  const [verifiedAdminToken, setVerifiedAdminToken] = useState(null);
+
+  const isAdmin = Boolean(sessionToken) && verifiedAdminToken === sessionToken;
 
   const userSnapshot = useSyncExternalStore(
     subscribeToAuthChanges,
@@ -94,9 +99,7 @@ function Navbar() {
   }, [accountOpen]);
 
   useEffect(() => {
-    const tokenAtStart = getAccessToken();
-
-    if (!tokenAtStart) return;
+    if (!sessionToken) return;
 
     let active = true;
 
@@ -106,14 +109,21 @@ function Navbar() {
           authenticated: true,
         });
 
-        if (active && getAccessToken() === tokenAtStart && result?.user) {
+        if (!active || getAccessToken() !== sessionToken) {
+          return;
+        }
+
+        if (result?.user) {
           saveAuthUser(result.user);
+
+          setVerifiedAdminToken(
+            result.user.role === "admin" ? sessionToken : null,
+          );
         }
       } catch {
-        // A 401 response is handled by apiRequest,
-        // which clears an invalid session.
-        // Temporary network errors are not treated
-        // as an automatic logout.
+        if (active && getAccessToken() === sessionToken) {
+          setVerifiedAdminToken(null);
+        }
       }
     }
 
@@ -122,7 +132,7 @@ function Navbar() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [sessionToken]);
 
   const { contact } = businessSettings;
 
@@ -309,10 +319,8 @@ function Navbar() {
               type="button"
               onClick={() => setAccountOpen((prev) => !prev)}
               aria-label={
-  isAuthenticated
-    ? "Open account menu"
-    : "Open sign-in options"
-}
+                isAuthenticated ? "Open account menu" : "Open sign-in options"
+              }
               aria-expanded={accountOpen}
               aria-controls="desktop-account-menu"
               className="
@@ -376,6 +384,21 @@ function Navbar() {
                     >
                       My Bookings
                     </Link>
+
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setAccountOpen(false)}
+                        className="
+      mt-1 block rounded-lg
+      px-4 py-3
+      text-sm font-semibold text-[#F87927]
+      transition-colors hover:bg-[#EAECF0]
+    "
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
 
                     <button
                       type="button"
@@ -475,6 +498,20 @@ function Navbar() {
                   >
                     My Bookings
                   </Link>
+
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={closeMenu}
+                      className="
+      block rounded-md px-3 py-3
+      text-base font-semibold text-[#F87927]
+      transition-colors hover:bg-white/10
+    "
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
 
                   <button
                     type="button"
