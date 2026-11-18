@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   CalendarDays,
+  CarFront,
   Inbox,
   LayoutDashboard,
   LogOut,
@@ -66,6 +67,19 @@ function AdminLayout() {
           >
             <CalendarDays size={19} />
             Bookings
+          </NavLink>
+
+          <NavLink
+            to="/admin/vehicles"
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-4 py-3
+    text-sm font-semibold transition-colors ${
+      isActive ? "bg-[#F87927] text-white" : "text-white/80 hover:bg-white/10"
+    }`
+            }
+          >
+            <CarFront size={19} />
+            Vehicles
           </NavLink>
 
           <Link

@@ -11,6 +11,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
 import AdminBookings from "./pages/admin/AdminBookings";
+import AdminVehicles from "./pages/admin/AdminVehicles";
 
 import Home from "./pages/Home";
 import VehicleDetails from "./pages/VehicleDetails";
@@ -72,6 +73,8 @@ function App() {
             <Route path="enquiries" element={<AdminEnquiries />} />
 
             <Route path="bookings" element={<AdminBookings />} />
+
+            <Route path="vehicles" element={<AdminVehicles />} />
           </Route>
         </Route>
       </Routes>
