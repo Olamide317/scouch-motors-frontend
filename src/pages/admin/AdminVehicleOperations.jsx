@@ -11,11 +11,7 @@ import {
 import { apiRequest, uploadMultipart } from "../../services/api";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 const initialBlock = {
   reason: "maintenance",
@@ -40,10 +36,12 @@ function formatWAT(value) {
 // Interpret datetime-local inputs as Nigerian civil time (UTC+01:00),
 // rather than silently applying the administrator's device timezone.
 function parseWAT(value) {
-  if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(value)) {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
     return null;
   }
+
   const date = new Date(`${value}:00+01:00`);
+
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
@@ -74,7 +72,7 @@ function AdminVehicleOperations() {
           apiRequest("/api/admin/vehicles", { authenticated: true }),
           apiRequest(
             `/api/admin/vehicles/${encodeURIComponent(id)}/availability-blocks`,
-            { authenticated: true }
+            { authenticated: true },
           ),
         ]);
 
@@ -88,7 +86,9 @@ function AdminVehicleOperations() {
           throw new Error("Unexpected vehicle management response.");
         }
 
-        const vehicle = inventoryResult.vehicles.find((item) => item._id === id);
+        const vehicle = inventoryResult.vehicles.find(
+          (item) => item._id === id,
+        );
         if (!vehicle) {
           throw new Error("Vehicle was not found in administrator inventory.");
         }
@@ -143,7 +143,7 @@ function AdminVehicleOperations() {
     try {
       const result = await uploadMultipart(
         `/api/vehicles/${encodeURIComponent(id)}/images`,
-        body
+        body,
       );
 
       if (result?.success !== true || !result?.image?.url) {
@@ -152,11 +152,52 @@ function AdminVehicleOperations() {
 
       setFile(null);
       if (fileRef.current) fileRef.current.value = "";
-      setFeedback({ text: "Vehicle image uploaded successfully.", error: false });
+      setFeedback({
+        text: "Vehicle image uploaded successfully.",
+        error: false,
+      });
       setReloadId((value) => value + 1);
     } catch (error) {
       setFeedback({
         text: error.message || "Unable to upload the image.",
+        error: true,
+      });
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function setCoverImage(url) {
+    if (busy || loading || snapshot.vehicle?.images?.[0] === url) {
+      return;
+    }
+
+    setBusy("cover");
+    setFeedback({ text: "", error: false });
+
+    try {
+      const result = await apiRequest(
+        `/api/vehicles/${encodeURIComponent(id)}/images/cover`,
+        {
+          method: "PATCH",
+          authenticated: true,
+          body: { url },
+        },
+      );
+
+      if (result?.success !== true || result.coverImage !== url) {
+        throw new Error("Cover image update was not confirmed.");
+      }
+
+      setFeedback({
+        text: "Vehicle cover image updated successfully.",
+        error: false,
+      });
+
+      setReloadId((value) => value + 1);
+    } catch (error) {
+      setFeedback({
+        text: error.message || "Unable to update cover image.",
         error: true,
       });
     } finally {
@@ -181,7 +222,10 @@ function AdminVehicleOperations() {
 
     const notes = blockForm.notes.trim();
     if (notes.length > 500) {
-      setFeedback({ text: "Notes must not exceed 500 characters.", error: true });
+      setFeedback({
+        text: "Notes must not exceed 500 characters.",
+        error: true,
+      });
       return;
     }
 
@@ -200,7 +244,7 @@ function AdminVehicleOperations() {
             endAt: end.toISOString(),
             notes,
           },
-        }
+        },
       );
 
       if (result?.success !== true || !result?.block?.id) {
@@ -227,7 +271,7 @@ function AdminVehicleOperations() {
     if (busy || loading || !block.isActive) return;
     if (
       !window.confirm(
-        "Deactivate this availability restriction? This does not change existing booking records."
+        "Deactivate this availability restriction? This does not change existing booking records.",
       )
     ) {
       return;
@@ -239,7 +283,7 @@ function AdminVehicleOperations() {
     try {
       const result = await apiRequest(
         `/api/admin/availability-blocks/${encodeURIComponent(block._id)}/deactivate`,
-        { method: "PATCH", authenticated: true }
+        { method: "PATCH", authenticated: true },
       );
 
       if (result?.success !== true) {
@@ -291,7 +335,8 @@ function AdminVehicleOperations() {
           Images & Availability
         </h1>
         <p className="mt-2 text-sm leading-6 text-[#3D3D3D]/70">
-          Upload vehicle photos and schedule periods when a vehicle cannot be rented.
+          Upload vehicle photos and schedule periods when a vehicle cannot be
+          rented.
         </p>
       </div>
 
@@ -302,7 +347,10 @@ function AdminVehicleOperations() {
       )}
 
       {!loading && snapshot.error && (
-        <p role="alert" className="mt-8 rounded-xl bg-red-50 p-5 text-sm text-red-700">
+        <p
+          role="alert"
+          className="mt-8 rounded-xl bg-red-50 p-5 text-sm text-red-700"
+        >
           {snapshot.error}
         </p>
       )}
@@ -331,7 +379,8 @@ function AdminVehicleOperations() {
                 <p className="mt-1 text-sm text-[#3D3D3D]/65">
                   {vehicle.isActive ? "Active listing" : "Inactive listing"}
                   {" · "}
-                  {vehicle.operationalStatus?.replaceAll("_", " ") ?? "Status unknown"}
+                  {vehicle.operationalStatus?.replaceAll("_", " ") ??
+                    "Status unknown"}
                 </p>
               </div>
               <Link
@@ -348,7 +397,8 @@ function AdminVehicleOperations() {
             </div>
             <p className="mt-2 text-sm leading-6 text-[#3D3D3D]/70">
               Upload one JPEG, PNG, or WebP image at a time (maximum 5 MB).
-              Existing images are preserved. Image deletion and reordering are not yet available.
+              Existing images are preserved. Image deletion and reordering are
+              not yet available.
             </p>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -363,9 +413,23 @@ function AdminVehicleOperations() {
                     loading="lazy"
                     className="aspect-[4/3] w-full bg-[#EAECF0] object-cover"
                   />
-                  <p className="px-3 py-2 text-xs text-[#3D3D3D]/65">
-                    Image {index + 1}
-                  </p>
+
+                  <div className="flex items-center justify-between gap-2 px-3 py-3">
+                    <span className="text-xs font-semibold text-[#233D4D]">
+                      {index === 0 ? "Cover Image" : `Image ${index + 1}`}
+                    </span>
+
+                    {index !== 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setCoverImage(url)}
+                        disabled={Boolean(busy) || loading}
+                        className="rounded-lg bg-[#233D4D] px-3 py-2 text-xs font-semibold text-white hover:bg-[#34596F] disabled:opacity-50"
+                      >
+                        Set as Cover
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -376,7 +440,10 @@ function AdminVehicleOperations() {
               </p>
             )}
 
-            <form onSubmit={handleImageUpload} className="mt-7 flex flex-wrap items-end gap-3">
+            <form
+              onSubmit={handleImageUpload}
+              className="mt-7 flex flex-wrap items-end gap-3"
+            >
               <label className="min-w-[240px] flex-1 text-sm font-semibold text-[#233D4D]">
                 Select vehicle image
                 <input
@@ -403,13 +470,15 @@ function AdminVehicleOperations() {
               <h3 className="text-lg font-bold">Scheduled Availability</h3>
             </div>
             <p className="mt-2 text-sm leading-6 text-[#3D3D3D]/70">
-              Times below are in Nigeria time (WAT, UTC+01:00), regardless of your device timezone.
-              Scheduling a block does not cancel existing bookings.
+              Times below are in Nigeria time (WAT, UTC+01:00), regardless of
+              your device timezone. Scheduling a block does not cancel existing
+              bookings.
             </p>
             <div className="mt-3 flex items-start gap-2 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">
               <ShieldAlert className="mt-1 shrink-0" size={18} />
               <span>
-                The backend rejects overlapping restrictions, confirmed rentals, and active checkout locks.
+                The backend rejects overlapping restrictions, confirmed rentals,
+                and active checkout locks.
               </span>
             </div>
 

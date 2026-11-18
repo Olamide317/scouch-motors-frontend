@@ -309,7 +309,7 @@ function AdminVehicleForm() {
         </div>
       )}
 
-      {saved.id && (
+      {saved?.id && (
         <Link
           to={`/admin/vehicles/${saved.id}/manage`}
           className="ml-3 mt-5 inline-flex rounded-xl bg-[#F87927] px-5 py-3 font-semibold text-white hover:bg-[#E96D1B]"
