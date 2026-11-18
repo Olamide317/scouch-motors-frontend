@@ -1,5 +1,11 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { ArrowLeft, LayoutDashboard, Inbox, LogOut } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Inbox,
+  LayoutDashboard,
+  LogOut,
+} from "lucide-react";
 
 import { clearAccessToken } from "../../services/api";
 
@@ -47,6 +53,19 @@ function AdminLayout() {
           >
             <Inbox size={19} />
             Enquiries
+          </NavLink>
+
+          <NavLink
+            to="/admin/bookings"
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-4 py-3
+    text-sm font-semibold transition-colors ${
+      isActive ? "bg-[#F87927] text-white" : "text-white/80 hover:bg-white/10"
+    }`
+            }
+          >
+            <CalendarDays size={19} />
+            Bookings
           </NavLink>
 
           <Link
