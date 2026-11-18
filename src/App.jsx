@@ -1,9 +1,4 @@
-import {
-  BrowserRouter,
-  Outlet,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -14,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminGate from "./components/admin/AdminGate";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
+import AdminEnquiries from "./pages/admin/AdminEnquiries";
 
 import Home from "./pages/Home";
 import VehicleDetails from "./pages/VehicleDetails";
@@ -46,22 +42,10 @@ function App() {
         {/* CUSTOMER WEBSITE */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
-          <Route
-            path="/vehicles"
-            element={<BrowseVehicles />}
-          />
-          <Route
-            path="/vehicles/:id"
-            element={<VehicleDetails />}
-          />
-          <Route
-            path="/vehicles/:id/book"
-            element={<RentalBooking />}
-          />
-          <Route
-            path="/services/repair"
-            element={<RepairMaintenance />}
-          />
+          <Route path="/vehicles" element={<BrowseVehicles />} />
+          <Route path="/vehicles/:id" element={<VehicleDetails />} />
+          <Route path="/vehicles/:id/book" element={<RentalBooking />} />
+          <Route path="/services/repair" element={<RepairMaintenance />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
 
@@ -74,10 +58,7 @@ function App() {
             }
           />
 
-          <Route
-            path="/payments/test/result"
-            element={<PaymentResult />}
-          />
+          <Route path="/payments/test/result" element={<PaymentResult />} />
 
           <Route path="*" element={<NotFound />} />
         </Route>
@@ -86,6 +67,8 @@ function App() {
         <Route path="/admin" element={<AdminGate />}>
           <Route element={<AdminLayout />}>
             <Route index element={<AdminOverview />} />
+
+            <Route path="enquiries" element={<AdminEnquiries />} />
           </Route>
         </Route>
       </Routes>

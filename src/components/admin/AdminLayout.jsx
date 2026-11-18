@@ -1,9 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  LayoutDashboard,
-  LogOut,
-} from "lucide-react";
+import { ArrowLeft, LayoutDashboard, Inbox, LogOut } from "lucide-react";
 
 import { clearAccessToken } from "../../services/api";
 
@@ -18,37 +14,39 @@ function AdminLayout() {
   return (
     <div className="min-h-screen bg-[#F7F8FA] md:flex">
       <aside className="flex flex-col bg-[#233D4D] px-5 py-6 text-white md:min-h-screen md:w-[260px] md:shrink-0 md:px-6">
-        <Link
-          to="/admin"
-          className="text-xl font-extrabold"
-        >
-          <span className="text-[#F87927]">
-            Scouch
-          </span>
+        <Link to="/admin" className="text-xl font-extrabold">
+          <span className="text-[#F87927]">Scouch</span>
           {" Admin"}
         </Link>
 
-        <p className="mt-2 text-xs text-white/60">
-          Management Dashboard
-        </p>
+        <p className="mt-2 text-xs text-white/60">Management Dashboard</p>
 
-        <nav
-          aria-label="Administrator navigation"
-          className="mt-8 space-y-2"
-        >
+        <nav aria-label="Administrator navigation" className="mt-8 space-y-2">
           <NavLink
             to="/admin"
             end
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${
-                isActive
-                  ? "bg-[#F87927] text-white"
-                  : "text-white/80 hover:bg-white/10"
-              }`
+              `flex items-center gap-3 rounded-xl px-4 py-3
+    text-sm font-semibold transition-colors ${
+      isActive ? "bg-[#F87927] text-white" : "text-white/80 hover:bg-white/10"
+    }`
             }
           >
             <LayoutDashboard size={19} />
             Overview
+          </NavLink>
+
+          <NavLink
+            to="/admin/enquiries"
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-4 py-3
+    text-sm font-semibold transition-colors ${
+      isActive ? "bg-[#F87927] text-white" : "text-white/80 hover:bg-white/10"
+    }`
+            }
+          >
+            <Inbox size={19} />
+            Enquiries
           </NavLink>
 
           <Link
