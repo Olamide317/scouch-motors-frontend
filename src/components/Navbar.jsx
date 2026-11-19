@@ -390,10 +390,11 @@ function Navbar() {
                         to="/admin"
                         onClick={() => setAccountOpen(false)}
                         className="
-      mt-1 block rounded-lg
-      px-4 py-3
-      text-sm font-semibold text-[#F87927]
-      transition-colors hover:bg-[#EAECF0]
+      mt-1 block rounded-lg px-4 py-3
+      text-sm font-semibold text-[#233D4D]
+      transition-colors
+      hover:bg-[#EAECF0]
+      hover:text-[#F87927]
     "
                       >
                         Admin Dashboard
@@ -504,10 +505,10 @@ function Navbar() {
                       to="/admin"
                       onClick={closeMenu}
                       className="
-      block rounded-md px-3 py-3
-      text-base font-semibold text-[#F87927]
-      transition-colors hover:bg-white/10
-    "
+  block rounded-md px-3 py-3
+  text-base font-medium text-white
+  transition-colors hover:bg-white/10
+  hover:text-[#F87927]"
                     >
                       Admin Dashboard
                     </Link>

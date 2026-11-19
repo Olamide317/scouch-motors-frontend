@@ -6,6 +6,7 @@ import {
   ImagePlus,
   RefreshCw,
   ShieldAlert,
+  Trash2,
 } from "lucide-react";
 
 import { apiRequest, uploadMultipart } from "../../services/api";
@@ -205,6 +206,60 @@ function AdminVehicleOperations() {
     }
   }
 
+  async function removeImage(url, index) {
+    if (busy || loading) return;
+
+    const images = snapshot.vehicle?.images ?? [];
+    const isLastImage = images.length === 1;
+
+    // An active listing must always retain at least one image.
+    if (snapshot.vehicle?.isActive && isLastImage) {
+      setFeedback({
+        text: "Deactivate this vehicle before removing its final image.",
+        error: true,
+      });
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to remove this image from the vehicle?",
+    );
+
+    if (!confirmed) return;
+
+    setBusy(`remove:${index}`);
+    setFeedback({ text: "", error: false });
+
+    try {
+      const result = await apiRequest(
+        `/api/vehicles/${encodeURIComponent(id)}/images`,
+        {
+          method: "DELETE",
+          authenticated: true,
+          body: { url },
+        },
+      );
+
+      if (result?.success !== true || !Array.isArray(result.images)) {
+        throw new Error("The server did not confirm image removal.");
+      }
+
+      setFeedback({
+        text: result.message || "Vehicle image removed successfully.",
+        error: result.cleanupStatus === "needs_attention",
+      });
+
+      setReloadId((value) => value + 1);
+    } catch (error) {
+      setFeedback({
+        text: error.message || "Unable to remove vehicle image.",
+        error: true,
+      });
+    } finally {
+      setBusy("");
+    }
+  }
+
   async function handleBlockCreate(event) {
     event.preventDefault();
     if (busy || loading) return;
@@ -397,8 +452,8 @@ function AdminVehicleOperations() {
             </div>
             <p className="mt-2 text-sm leading-6 text-[#3D3D3D]/70">
               Upload one JPEG, PNG, or WebP image at a time (maximum 5 MB).
-              Existing images are preserved. Image deletion and reordering are
-              not yet available.
+              Choose a cover image or remove photos you no longer need. Active
+              listings must retain at least one image.
             </p>
 
             <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -414,21 +469,42 @@ function AdminVehicleOperations() {
                     className="aspect-[4/3] w-full bg-[#EAECF0] object-cover"
                   />
 
-                  <div className="flex items-center justify-between gap-2 px-3 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-3">
                     <span className="text-xs font-semibold text-[#233D4D]">
                       {index === 0 ? "Cover Image" : `Image ${index + 1}`}
                     </span>
 
-                    {index !== 0 && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {index !== 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setCoverImage(url)}
+                          disabled={Boolean(busy) || loading}
+                          className="rounded-lg bg-[#233D4D] px-3 py-2 text-xs font-semibold text-white hover:bg-[#34596F] disabled:opacity-50"
+                        >
+                          Set as Cover
+                        </button>
+                      )}
+
                       <button
                         type="button"
-                        onClick={() => setCoverImage(url)}
-                        disabled={Boolean(busy) || loading}
-                        className="rounded-lg bg-[#233D4D] px-3 py-2 text-xs font-semibold text-white hover:bg-[#34596F] disabled:opacity-50"
+                        onClick={() => removeImage(url, index)}
+                        disabled={
+                          Boolean(busy) ||
+                          loading ||
+                          (vehicle.isActive && vehicle.images.length === 1)
+                        }
+                        title={
+                          vehicle.isActive && vehicle.images.length === 1
+                            ? "An active listing must retain at least one image."
+                            : "Remove this image"
+                        }
+                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
                       >
-                        Set as Cover
+                        <Trash2 size={14} />
+                        {busy === `remove:${index}` ? "Removing..." : "Remove"}
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
               ))}
