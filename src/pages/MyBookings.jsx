@@ -10,6 +10,7 @@ function MyBookings() {
   const [testPayments, setTestPayments] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [testPaymentsAvailable, setTestPaymentsAvailable] = useState(false);
 
   // Retrieve real bookings and their Paystack test payments.
   useEffect(() => {
@@ -17,38 +18,68 @@ function MyBookings() {
 
     async function loadBookings() {
       try {
-        const [bookingResult, paymentResult] = await Promise.all([
-          apiRequest("/api/bookings/my", {
-            authenticated: true,
-          }),
+        // Booking history is the primary resource.
+        const bookingResult = await apiRequest("/api/bookings/my", {
+          authenticated: true,
+        });
 
-          apiRequest("/api/payments/test/my", {
-            authenticated: true,
-          }),
-        ]);
-
-        // Map payment records to their corresponding bookings.
-        const paymentMap = {};
-
-        for (const payment of paymentResult.payments ?? []) {
-          const bookingId = payment.bookingId;
-
-          if (!bookingId) continue;
-
-          // The backend returns newest payments first.
-          // Always prioritize a successful test payment.
-          if (
-            !paymentMap[bookingId] ||
-            (paymentMap[bookingId].status !== "success" &&
-              payment.status === "success")
-          ) {
-            paymentMap[bookingId] = payment;
-          }
+        if (
+          bookingResult?.success !== true ||
+          !Array.isArray(bookingResult.bookings)
+        ) {
+          throw new Error("Unexpected booking history response.");
         }
 
         if (active) {
-          setBookings(bookingResult.bookings ?? []);
-          setTestPayments(paymentMap);
+          setBookings(bookingResult.bookings);
+          setError("");
+        }
+
+        // Test-payment history is optional. Its failure must
+        // not prevent the customer's bookings from displaying.
+        try {
+          const paymentResult = await apiRequest("/api/payments/test/my", {
+            authenticated: true,
+          });
+
+          if (
+            paymentResult?.success !== true ||
+            !Array.isArray(paymentResult.payments)
+          ) {
+            throw new Error("Unexpected test-payment history response.");
+          }
+
+          const paymentMap = {};
+
+          for (const payment of paymentResult.payments) {
+            const bookingId = payment.bookingId;
+            if (!bookingId) continue;
+
+            if (
+              !paymentMap[bookingId] ||
+              (paymentMap[bookingId].status !== "success" &&
+                payment.status === "success")
+            ) {
+              paymentMap[bookingId] = payment;
+            }
+          }
+
+          if (active) {
+            setTestPayments(paymentMap);
+            setTestPaymentsAvailable(true);
+          }
+        } catch (paymentError) {
+          if (active) {
+            setTestPayments({});
+            setTestPaymentsAvailable(false);
+          }
+
+          // This is optional functionality; do not replace
+          // the successful booking-history result with an error.
+          console.warn(
+            "Test-payment history is currently unavailable:",
+            paymentError.message,
+          );
         }
       } catch (err) {
         if (active) {
@@ -91,12 +122,10 @@ function MyBookings() {
         {
           method: "POST",
           authenticated: true,
-        }
+        },
       );
 
-      const checkoutUrl = new URL(
-        result.payment?.authorizationUrl
-      );
+      const checkoutUrl = new URL(result.payment?.authorizationUrl);
 
       // Only allow redirection to Paystack's
       // official hosted checkout.
@@ -111,8 +140,7 @@ function MyBookings() {
     } catch (error) {
       setPaymentError((previous) => ({
         ...previous,
-        [bookingId]:
-          error.message || "Unable to start checkout.",
+        [bookingId]: error.message || "Unable to start checkout.",
       }));
     } finally {
       setStartingPaymentId(null);
@@ -125,9 +153,7 @@ function MyBookings() {
         {/* PAGE HEADER */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-[#233D4D]">
-              My Bookings
-            </h1>
+            <h1 className="text-3xl font-bold text-[#233D4D]">My Bookings</h1>
 
             <p className="mt-2 text-[#3D3D3D]/65">
               View and manage your rental requests.
@@ -187,9 +213,7 @@ function MyBookings() {
                   "provisionally_approved",
                   "awaiting_payment",
                 ].includes(booking.status) &&
-                ["unpaid", "failed"].includes(
-                  booking.paymentStatus
-                ) &&
+                ["unpaid", "failed"].includes(booking.paymentStatus) &&
                 !hasSuccessfulTestPayment;
 
               return (
@@ -210,8 +234,7 @@ function MyBookings() {
                   {/* BOOKING STATUS */}
                   <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
                     <p>
-                      <strong>Booking:</strong>{" "}
-                      {booking.status}
+                      <strong>Booking:</strong> {booking.status}
                     </p>
 
                     <p>
@@ -220,8 +243,7 @@ function MyBookings() {
                     </p>
 
                     <p>
-                      <strong>Real Payment:</strong>{" "}
-                      {booking.paymentStatus}
+                      <strong>Real Payment:</strong> {booking.paymentStatus}
                     </p>
                   </div>
 
@@ -230,9 +252,7 @@ function MyBookings() {
                     {new Intl.NumberFormat("en-NG", {
                       style: "currency",
                       currency: "NGN",
-                    }).format(
-                      booking.pricing?.totalAmount ?? 0
-                    )}
+                    }).format(booking.pricing?.totalAmount ?? 0)}
                   </p>
 
                   {/* PAYSTACK TEST PAYMENT STATUS */}
@@ -241,39 +261,46 @@ function MyBookings() {
                       Paystack Test Payment
                     </p>
 
-                    {hasSuccessfulTestPayment ? (
-                      <div className="mt-2 flex items-center gap-2">
-                        <span
-                          aria-hidden="true"
-                          className="text-lg font-bold text-green-600"
-                        >
-                          ✓
-                        </span>
-
-                        <span className="text-sm font-semibold text-green-700">
-                          Successful (Test Mode)
-                        </span>
-                      </div>
-                    ) : (
+                    {!testPaymentsAvailable ? (
                       <p className="mt-2 text-sm text-[#3D3D3D]/70">
-                        {testPayment?.status ?? "Not started"}
+                        Test payments are currently unavailable. Your booking
+                        information is unaffected.
                       </p>
-                    )}
+                    ) : (
+                      <>
+                        {hasSuccessfulTestPayment ? (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span
+                              aria-hidden="true"
+                              className="text-lg font-bold text-green-600"
+                            >
+                              ✓
+                            </span>
+                            <span className="text-sm font-semibold text-green-700">
+                              Successful (Test Mode)
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-sm text-[#3D3D3D]/70">
+                            {testPayment?.status ?? "Not started"}
+                          </p>
+                        )}
 
-                    {hasSuccessfulTestPayment &&
-                      testPayment.verifiedAt && (
+                        {hasSuccessfulTestPayment && testPayment.verifiedAt && (
+                          <p className="mt-2 text-xs text-[#3D3D3D]/60">
+                            Verified:{" "}
+                            {new Date(testPayment.verifiedAt).toLocaleString(
+                              "en-NG",
+                            )}
+                          </p>
+                        )}
+
                         <p className="mt-2 text-xs text-[#3D3D3D]/60">
-                          Verified:{" "}
-                          {new Date(
-                            testPayment.verifiedAt
-                          ).toLocaleString("en-NG")}
+                          Test transactions do not confirm real payments or
+                          vehicle reservations.
                         </p>
-                      )}
-
-                    <p className="mt-2 text-xs text-[#3D3D3D]/60">
-                      Test transactions do not confirm
-                      real payments or vehicle reservations.
-                    </p>
+                      </>
+                    )}
                   </div>
 
                   {/* PAYSTACK TEST CHECKOUT */}
@@ -281,9 +308,7 @@ function MyBookings() {
                     <div className="mt-6">
                       <button
                         type="button"
-                        onClick={() =>
-                          handlePaystackCheckout(bookingId)
-                        }
+                        onClick={() => handlePaystackCheckout(bookingId)}
                         disabled={Boolean(startingPaymentId)}
                         className="rounded-xl bg-[#233D4D] px-6 py-3 font-semibold text-white transition-colors hover:bg-[#34596F] disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -293,15 +318,12 @@ function MyBookings() {
                       </button>
 
                       <p className="mt-2 text-xs text-[#3D3D3D]/60">
-                        Demonstration only. No real payment
-                        or vehicle reservation will be confirmed.
+                        Demonstration only. No real payment or vehicle
+                        reservation will be confirmed.
                       </p>
 
                       {paymentError[bookingId] && (
-                        <p
-                          role="alert"
-                          className="mt-3 text-sm text-red-600"
-                        >
+                        <p role="alert" className="mt-3 text-sm text-red-600">
                           {paymentError[bookingId]}
                         </p>
                       )}
