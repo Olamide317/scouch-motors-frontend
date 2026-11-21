@@ -304,7 +304,7 @@ function MyBookings() {
                   </div>
 
                   {/* PAYSTACK TEST CHECKOUT */}
-                  {canStartTestPayment && (
+                  {testPaymentsAvailable && canStartTestPayment && (
                     <div className="mt-6">
                       <button
                         type="button"

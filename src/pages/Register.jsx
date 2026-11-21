@@ -254,7 +254,7 @@ function Register() {
                   value={form.password}
                   onChange={handleChange}
                   className={`${inputClass} pr-20`}
-                  minLength={8}
+                  minLength={4}
                   required
                 />
 
@@ -285,7 +285,7 @@ function Register() {
                   value={form.confirmPassword}
                   onChange={handleChange}
                   className={`${inputClass} pr-20`}
-                  minLength={8}
+                  minLength={4}
                   required
                 />
 
@@ -352,7 +352,8 @@ function Register() {
           </form>
 
           <p className="mt-6 text-center text-xs leading-5 text-[#3D3D3D]/50">
-            Frontend preview — account registration is not yet connected.
+            Your account details are submitted securely to the Scouch Motors
+            server.
           </p>
         </section>
       </div>
